@@ -1,4 +1,4 @@
-NAME = central
+NAME = centralpy
 SRC = ./${NAME}
 PROMPT = ${NAME}
 
@@ -22,7 +22,7 @@ black: env
 ## - env        : Set up the virtual environment
 env: env/bin/activate
 
-env/bin/activate: requirements.txt
+env/bin/activate: requirements.txt requirements-dev.txt
 	test -d env || python3 -m venv --prompt ${PROMPT} env/
 	. env/bin/activate && python3 -m pip install -r requirements.txt
 	touch env/bin/activate

@@ -23,7 +23,7 @@ class CsvZip:
             suffix = now.strftime(suffix_format)
         out_file = f"{self.form_id}{suffix}.zip"
         out_dir.mkdir(parents=True, exist_ok=True)
-        full_filename = out_dir/out_file
+        full_filename = out_dir / out_file
         with open(full_filename, mode="wb") as f:
             f.write(self.response.content)
 
