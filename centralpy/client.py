@@ -13,8 +13,8 @@ class CentralClient:
         "/v1/projects/{project_id}/forms/{form_id}/submissions.csv.zip"
     )
 
-    def __init__(self, host: str, email: str, password: str):
-        self.host = host
+    def __init__(self, url: str, email: str, password: str):
+        self.url = url
         self.email = email
         self.password = password
         self.session_token = None
@@ -27,13 +27,13 @@ class CentralClient:
         return {"Authorization": f"Bearer {self.session_token}"}
 
     def create_session_token(self):
-        if not self.host or not self.email or not self.password:
+        if not self.url or not self.email or not self.password:
             raise AuthenticationException(
                 "Not enough information for authentication provided: "
-                f'email is "{self.email}", password is "{self.password}", server URL is "{self.host}"'
+                f'email is "{self.email}", password is "{self.password}", server URL is "{self.url}"'
             )
         resp = requests.post(
-            f"{self.host}{self.API_SESSIONS}", json=self._get_auth_dict()
+            f"{self.url}{self.API_SESSIONS}", json=self._get_auth_dict()
         )
         resp.raise_for_status()
         self.session_token = resp.json()["token"]
@@ -47,6 +47,6 @@ class CentralClient:
         export_url = self.API_EXPORT_SUBMISSIONS.format(
             project_id=project_id, form_id=form_id
         )
-        resp = requests.get(f"{self.host}{export_url}", headers=self._get_auth_header())
+        resp = requests.get(f"{self.url}{export_url}", headers=self._get_auth_header())
         resp.raise_for_status()
         return CsvZip(resp, form_id)

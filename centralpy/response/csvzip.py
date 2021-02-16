@@ -6,7 +6,7 @@ import zipfile
 
 class CsvZip:
 
-    ARCHIVE_TIMESTAMP_SUFFIX_FORMAT = "-%Y-%m-%dT%H-%M-%S"
+    ZIPFILE_SUFFIX = "-%Y-%m-%dT%H-%M-%S"
 
     def __init__(self, response, form_id):
         self.response = response
@@ -16,7 +16,7 @@ class CsvZip:
     def zip(self):
         return zipfile.ZipFile(io.BytesIO(self.response.content))
 
-    def save_zip(self, out_dir: Path, suffix_format=None):
+    def save_zip(self, out_dir: Path, suffix_format: str = ZIPFILE_SUFFIX):
         suffix = ""
         if suffix_format is not None:
             now = datetime.datetime.utcnow()
@@ -26,15 +26,19 @@ class CsvZip:
         full_filename = out_dir / out_file
         with open(full_filename, mode="wb") as f:
             f.write(self.response.content)
+        return full_filename
 
     def save_data(self, out_dir: Path):
+        saved = []
         this_zip = self.zip
         out_dir.mkdir(parents=True, exist_ok=True)
         for zip_info in this_zip.infolist():
             if zip_info.filename.startswith("media/"):
                 continue
             this_zip.extract(zip_info, path=out_dir)
+            saved.append(zip_info.filename)
         this_zip.close()
+        return saved
 
     def __repr__(self):
         return f'<CsvZip form_id="{self.form_id}">'

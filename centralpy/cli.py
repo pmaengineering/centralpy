@@ -1,10 +1,14 @@
 import logging
+from pathlib import Path
+import pprint
 import sys
 
 import click
+from requests.exceptions import HTTPError
 
-from centralpy import CentralClient
 from centralpy.__version__ import __version__
+from centralpy import CentralClient
+from centralpy.pull_csv_zip import pull_csv_zip, keep_recent_zips
 
 
 logger = logging.getLogger(__name__)
@@ -47,6 +51,10 @@ def main(ctx, url, email, password, log_file, verbose, config_file):
         CENTRAL_LOG_FILE=log_file,
         CENTRAL_VERBOSE=verbose,
     )
+    ctx.ensure_object(dict)
+    ctx.obj["config"] = config
+    if ctx.invoked_subcommand == "config":
+        return
     setup_logging(config.get("CENTRAL_LOG_FILE"), config.get("CENTRAL_VERBOSE"))
     try:
         client = CentralClient(
@@ -54,7 +62,6 @@ def main(ctx, url, email, password, log_file, verbose, config_file):
             config["CENTRAL_EMAIL"],
             config["CENTRAL_PASSWORD"],
         )
-        ctx.ensure_object(dict)
         ctx.obj["client"] = client
     except KeyError as err:
         print(
@@ -63,7 +70,89 @@ def main(ctx, url, email, password, log_file, verbose, config_file):
         print(
             "Try adding this information to a config file or pass it as a command-line option."
         )
-        print('Type "centralpy --help" for more.')
+        print('Type "centralpy --help" for more information.')
+        sys.exit(1)
+
+
+@main.command()
+@click.option(
+    "--project",
+    required=True,
+    type=int,
+    help="The numeric ID of the project. ODK Central assigns this ID when the project is created.",
+)
+@click.option(
+    "--form-id",
+    required=True,
+    type=str,
+    help="The form ID (a string), usually defined in the XLSForm settings. This is a unique identifier for an ODK form.",
+)
+@click.option(
+    "--csv-dir",
+    required=True,
+    type=click.Path(file_okay=False),
+    help="The directory to export CSV files to",
+)
+@click.option(
+    "--zip-dir",
+    required=True,
+    type=click.Path(file_okay=False),
+    help="The directory to save the downloaded zip to",
+)
+@click.option(
+    "--keep",
+    default=0,
+    help="The number of zip files to keep in the zip directory, keeping the most recent. The number must be larger than 0 for anything to happen.",
+)
+@click.pass_context
+def pullcsv(ctx, project, form_id, csv_dir, zip_dir, keep):
+    """Pull CSV data from ODK Central.
+
+    An easy way to get the project ID (a number) and the XForm ID is to
+    navigate to the form on ODK Central, and then examine the URL.
+    """
+    client = ctx.obj["client"]
+    try:
+        logger.info(
+            "CSV pull initiated: URL %s, project %s, form_id %s",
+            client.url,
+            project,
+            form_id,
+        )
+        pull_csv_zip(client, str(project), form_id, Path(csv_dir), Path(zip_dir))
+        keep_recent_zips(keep, form_id, Path(zip_dir))
+        logger.info(
+            "CSV pull completed: URL %s, project %s, form_id %s",
+            client.url,
+            project,
+            form_id,
+        )
+    except HTTPError as err:
+        resp = err.response
+        if resp.status_code == 401:
+            print(
+                (
+                    "Sorry, something went wrong. ODK Central did not accept the provided credentials. "
+                    f"ODK Central's message is {resp.text}."
+                )
+            )
+        elif resp.status_code == 404:
+            print(
+                (
+                    "Sorry, something went wrong. The server responded with a 404, Resource not found. "
+                    "ODK Central should not do that. "
+                    f'The provided ODK Central URL is "{client.url}". Is that correct?'
+                )
+            )
+        else:
+            print(
+                (
+                    "Sorry, something went wrong. In response to the request for a CSV zip, ODK Central "
+                    f"responded with the error code {resp.status_code}. "
+                    f"ODK Central's message is {resp.text}. "
+                    "Hopefully that helps!"
+                )
+            )
         sys.exit(1)
 
 
@@ -71,38 +160,22 @@ def main(ctx, url, email, password, log_file, verbose, config_file):
 @click.option(
     "--project", required=True, type=int, help="The numeric ID of the project"
 )
-@click.option("--xform-id", required=True, type=str, help="The Xform ID (a string)")
 @click.option(
-    "--export-dir",
-    required=True,
-    type=click.Path(file_okay=False),
-    help="The directory to export CSV files to",
-)
-@click.option(
-    "--storage-dir",
-    required=True,
-    type=click.Path(file_okay=False),
-    help="The directory to save the downloaded zip to",
-)
-@click.pass_context
-def pull(ctx, project, xform_id, export_dir, storage_dir):
-    """Pull CSV data from ODK Central."""
-    pass
-
-
-@main.command()
-@click.option(
-    "--project", required=True, type=int, help="The numeric ID of the project"
-)
-@click.option(
-    "--local-directory",
+    "--local-dir",
     required=True,
     type=click.Path(file_okay=False),
     help="The directory to push uploads from",
 )
 @click.pass_context
-def push(ctx, project, local_directory):
+def push(ctx, project, local_dir):
     """Push ODK submissions to ODK Central."""
+
+
+@main.command()
+@click.pass_context
+def config(ctx):
+    """Show the configuration that centralpy is using."""
+    pprint.pprint(ctx.obj["config"])
 
 
 @main.command()
@@ -121,7 +194,8 @@ def get_centralpy_config(config_file, **kwargs):
     for key, value in kwargs.items():
         if key.startswith("CENTRAL_") and value is not None:
             config[key] = value
-    return config
+    filtered = {k: v for k, v in config.items() if k.startswith("CENTRAL_")}
+    return filtered
 
 
 def setup_logging(log_file, verbose):
@@ -140,5 +214,3 @@ def setup_logging(log_file, verbose):
         file_handler.setLevel(logging.NOTSET)
         file_handler.setFormatter(formatter)
         centralpy_logger.addHandler(file_handler)
-    if verbose or log_file:
-        logger.info("Logging is enabled!")
