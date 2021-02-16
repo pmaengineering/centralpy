@@ -154,6 +154,15 @@ def pullcsv(ctx, project, form_id, csv_dir, zip_dir, keep):
                 )
             )
         sys.exit(1)
+    except ConnectionError:
+        print(
+            (
+                "Sorry, something went wrong. The request was unable to reach "
+                "the server. Try verifying the internet connection by navigating to "
+                f"{client.url} in a browser, or by pinging the server."
+            )
+        )
+        sys.exit(1)
 
 
 @main.command()
