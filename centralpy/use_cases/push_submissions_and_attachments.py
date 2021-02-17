@@ -1,6 +1,8 @@
+"""A module for the use case of pushing submissions and their attachments."""
 from collections import Counter
 import logging
 from pathlib import Path
+from typing import Iterable, Optional
 import xml.etree.ElementTree as ET
 
 from requests.exceptions import HTTPError
@@ -36,13 +38,14 @@ def push_submissions_and_attachments(
             "The skipped XML files are found in these common folders: %s",
             ", ".join(str(path) for path in multiples),
         )
-    xml_to_push = (f for f in found_xml if f.parent not in multiples)
-    push_all(xml_to_push, client, project)
+    xmls_to_push = (f for f in found_xml if f.parent not in multiples)
+    push_all(xmls_to_push, client, project)
 
 
-def push_all(xml_to_push, client, project):
+def push_all(xmls_to_push: Iterable[Path], client: CentralClient, project: str):
+    """Push all supplied XML files to ODK Central."""
     bad_resources = set()
-    for single_xml in xml_to_push:
+    for single_xml in xmls_to_push:
         with open(single_xml, mode="rb") as f:
             data = f.read()
         form_id = get_form_id_from_xml(data)
@@ -68,7 +71,10 @@ def push_all(xml_to_push, client, project):
                     logger.warning(msg, form_id, single_xml)
                     bad_resources.add(form_id)
                 elif resp.status_code == 409:
-                    msg = "No change: ODK Central already has a submission with the same instance ID as %s"
+                    msg = (
+                        "No change: ODK Central already has a submission with the "
+                        "same instance ID as %s"
+                    )
                     logger.warning(msg, single_xml)
                 else:
                     raise
@@ -82,7 +88,10 @@ def push_all(xml_to_push, client, project):
             )
 
 
-def push_attachments(client, project, form_id, instance_id, xml_path):
+def push_attachments(
+    client: CentralClient, project: str, form_id: str, instance_id: str, xml_path: Path
+):
+    """Push attachments in the same directory as a submission."""
     for non_xml in get_non_xml_files(xml_path.parent):
         filename = non_xml.name
         with open(non_xml, mode="rb") as f:
@@ -97,13 +106,16 @@ def push_attachments(client, project, form_id, instance_id, xml_path):
 
 
 def get_non_xml_files(path: Path):
+    """Get all non-XML files at a given path."""
     if path.is_dir():
         files = path.glob("*")
         return (f for f in files if f.is_file() and f.suffix != ".xml")
     return iter(())
 
 
-def get_form_id_from_xml(data):
+# pylint: disable=unsubscriptable-object
+def get_form_id_from_xml(data: bytes) -> Optional[str]:
+    """Given an XForm in bytes, get the form ID."""
     try:
         root = ET.fromstring(data)
         form_id = root.attrib.get("id")

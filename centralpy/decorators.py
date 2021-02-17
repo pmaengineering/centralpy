@@ -1,3 +1,4 @@
+"""Custom decorators for centralpy source code."""
 import functools
 import sys
 
@@ -5,6 +6,8 @@ from requests.exceptions import HTTPError
 
 
 def handle_common_errors(func):
+    """Handle common errors from interacting with ODK Central."""
+
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         try:
@@ -14,24 +17,26 @@ def handle_common_errors(func):
             if resp.status_code == 401:
                 print(
                     (
-                        "Sorry, something went wrong. ODK Central did not accept the provided credentials. "
-                        f"ODK Central's message is {resp.text}."
+                        "Sorry, something went wrong. ODK Central did not accept the provided "
+                        f"credentials. ODK Central's message is {resp.text}."
                     )
                 )
             elif resp.status_code == 403:
                 print(
                     (
-                        "Sorry, something went wrong. The authenticated user does not have permission "
-                        "to perform the requested action. Verify the web user is added to the correct "
-                        "project and has the Project Manager role on that project."
+                        "Sorry, something went wrong. The authenticated user does not have "
+                        "permission to perform the requested action. Verify the web user "
+                        "is added to the correct project and has the Project Manager role "
+                        "on that project. "
                         f"ODK Central's message is {resp.text}."
                     )
                 )
             elif resp.status_code == 404:
                 print(
                     (
-                        "Sorry, something went wrong. The server responded with a 404, Resource not found. "
-                        "Verify the different components of this URL, including the host and different path segments: "
+                        "Sorry, something went wrong. The server responded with a 404, "
+                        "Resource not found. Verify the different components of this URL, "
+                        "including the host and different path segments: "
                         f"{resp.url}"
                     )
                 )

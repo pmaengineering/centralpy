@@ -1,3 +1,4 @@
+"""A module for the use case of downloading a submissions zip."""
 import datetime
 import logging
 from pathlib import Path
@@ -12,6 +13,7 @@ logger = logging.getLogger(__name__)
 def pull_csv_zip(
     client: CentralClient, project: str, form_id: str, csv_dir: Path, zip_dir: Path
 ):
+    """Download the CSV zip from ODK Central."""
     csv_zip = client.get_submissions_csv_zip(project, form_id)
     logger.info("CSV zip download complete for form_id %s", form_id)
     full_zip_filename = csv_zip.save_zip(zip_dir)
@@ -22,6 +24,7 @@ def pull_csv_zip(
 
 
 def keep_recent_zips(keep: int, form_id: str, zip_dir: Path, suffix_format: str = None):
+    """Keep only the specified number of CSV zip files in a directory."""
     if keep < 1:
         return
     zips = list(zip_dir.glob(f"{form_id}*.zip"))
@@ -37,7 +40,10 @@ def keep_recent_zips(keep: int, form_id: str, zip_dir: Path, suffix_format: str 
             pass
     if len(zips) != len(result):
         logger.warning(
-            'In directory %s, %d zip files start with "%s", but only %d have date information in the file name.',
+            (
+                'In directory %s, %d zip files start with "%s", but only %d have date '
+                "information in the file name."
+            ),
             zip_dir,
             len(zips),
             form_id,

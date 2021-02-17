@@ -1,3 +1,4 @@
+"""CLI for PMA use cases."""
 import logging
 from pathlib import Path
 import pprint
@@ -35,7 +36,10 @@ logger = logging.getLogger(__name__)
 @click.option(
     "--config-file",
     type=click.File(),
-    help="A configuration file with KEY=VALUE defined (one per line). Keys should be formatted as CENTRAL_***.",
+    help=(
+        "A configuration file with KEY=VALUE defined (one per line). "
+        "Keys should be formatted as CENTRAL_***."
+    ),
 )
 @click.pass_context
 def main(ctx, url, email, password, log_file, verbose, config_file):
@@ -70,7 +74,8 @@ def main(ctx, url, email, password, log_file, verbose, config_file):
         ctx.obj["client"] = client
     except KeyError as err:
         print(
-            f"Sorry, unable to create an ODK Central client because of missing information: {err!s}."
+            "Sorry, unable to create an ODK Central client because of missing information: "
+            f"{err!s}."
         )
         print(
             "Try adding this information to a config file or pass it as a command-line option."
@@ -91,7 +96,10 @@ def main(ctx, url, email, password, log_file, verbose, config_file):
     "--form-id",
     required=True,
     type=str,
-    help="The form ID (a string), usually defined in the XLSForm settings. This is a unique identifier for an ODK form.",
+    help=(
+        "The form ID (a string), usually defined in the XLSForm settings. "
+        "This is a unique identifier for an ODK form."
+    ),
 )
 @click.option(
     "--csv-dir",
@@ -111,7 +119,10 @@ def main(ctx, url, email, password, log_file, verbose, config_file):
     "--keep",
     default=-1,
     show_default=True,
-    help="The number of zip files to keep in the zip directory, keeping the most recent. The number must be 1 or larger for anything to happen.",
+    help=(
+        "The number of zip files to keep in the zip directory, keeping the "
+        "most recent. The number must be 1 or larger for anything to happen."
+    ),
 )
 @click.pass_context
 def pullcsv(ctx, project, form_id, csv_dir, zip_dir, keep):
@@ -185,7 +196,8 @@ def version():
     print(f"centralpy v{__version__}")
 
 
-def get_centralpy_config(config_file, **kwargs):
+def get_centralpy_config(config_file: click.File, **kwargs) -> dict:
+    """Combine configuration from a file and from keyword arguments."""
     # pylint: disable=redefined-outer-name
     config = {}
     if config_file:
@@ -200,7 +212,8 @@ def get_centralpy_config(config_file, **kwargs):
     return filtered
 
 
-def setup_logging(log_file, verbose):
+def setup_logging(log_file: click.File, verbose: bool) -> None:
+    """Set up logging for centralpy."""
     centralpy_logger = logging.getLogger("centralpy")
     centralpy_logger.setLevel(logging.DEBUG)
     formatter = logging.Formatter(
