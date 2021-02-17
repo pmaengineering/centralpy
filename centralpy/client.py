@@ -2,16 +2,21 @@ import io
 
 import requests
 
-from centralpy.error import AuthenticationException
-from centralpy.response import CsvZip
+from centralpy.errors import AuthenticationException
+from centralpy.response import Response, CsvZip
 
 
 class CentralClient:
 
     API_SESSIONS = "/v1/sessions"
     API_EXPORT_SUBMISSIONS = (
-        "/v1/projects/{project_id}/forms/{form_id}/submissions.csv.zip"
+        "/v1/projects/{project}/forms/{form_id}/submissions.csv.zip"
     )
+    API_SUBMISSIONS = "/v1/projects/{project}/forms/{form_id}/submissions"
+    API_ATTACHMENTS = (
+        "/v1/projects/{project}/forms/{form_id}/submissions/{instance_id}/attachments"
+    )
+    API_ADD_ATTACHMENT = "/v1/projects/{project}/forms/{form_id}/submissions/{instance_id}/attachments/{filename}"
 
     def __init__(self, url: str, email: str, password: str):
         self.url = url
@@ -42,11 +47,38 @@ class CentralClient:
         if self.session_token is None:
             self.create_session_token()
 
-    def export_submissions_to_csv_zip(self, project_id: str, form_id: str):
+    def get_submissions_csv_zip(self, project: str, form_id: str):
         self.ensure_session()
         export_url = self.API_EXPORT_SUBMISSIONS.format(
-            project_id=project_id, form_id=form_id
+            project=project, form_id=form_id
         )
         resp = requests.get(f"{self.url}{export_url}", headers=self._get_auth_header())
         resp.raise_for_status()
         return CsvZip(resp, form_id)
+
+    def post_submission(self, project: str, form_id: str, data):
+        self.ensure_session()
+        submission_url = self.API_SUBMISSIONS.format(project=project, form_id=form_id)
+        resp = requests.post(
+            f"{self.url}{submission_url}",
+            headers={"Content-type": "text/xml", **self._get_auth_header()},
+            data=data,
+        )
+        resp.raise_for_status()
+        # return resp.json()["instanceId"]
+        return Response(resp)
+
+    def post_attachment(self, project, form_id, instance_id, filename, data):
+        self.ensure_session()
+        add_attachment_url = self.API_ADD_ATTACHMENT.format(
+            project=project,
+            form_id=form_id,
+            instance_id=instance_id,
+        )
+        resp = requests.post(
+            f"{self.url}{add_attachment_url}",
+            headers={"Content-type": "*/*", **self._get_auth_header()},
+            data=data,
+        )
+        resp.raise_for_status()
+        return Response(resp)

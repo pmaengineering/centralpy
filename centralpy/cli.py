@@ -8,7 +8,12 @@ from requests.exceptions import HTTPError
 
 from centralpy.__version__ import __version__
 from centralpy import CentralClient
-from centralpy.pull_csv_zip import pull_csv_zip, keep_recent_zips
+from centralpy.decorators import handle_common_errors
+from centralpy.use_cases import (
+    pull_csv_zip,
+    keep_recent_zips,
+    push_submissions_and_attachments,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -75,6 +80,7 @@ def main(ctx, url, email, password, log_file, verbose, config_file):
 
 
 @main.command()
+@handle_common_errors
 @click.option(
     "--project",
     required=True,
@@ -89,20 +95,23 @@ def main(ctx, url, email, password, log_file, verbose, config_file):
 )
 @click.option(
     "--csv-dir",
-    required=True,
+    default="./",
+    show_default=True,
     type=click.Path(file_okay=False),
     help="The directory to export CSV files to",
 )
 @click.option(
     "--zip-dir",
-    required=True,
+    default="./",
+    show_default=True,
     type=click.Path(file_okay=False),
     help="The directory to save the downloaded zip to",
 )
 @click.option(
     "--keep",
-    default=0,
-    help="The number of zip files to keep in the zip directory, keeping the most recent. The number must be larger than 0 for anything to happen.",
+    default=-1,
+    show_default=True,
+    help="The number of zip files to keep in the zip directory, keeping the most recent. The number must be 1 or larger for anything to happen.",
 )
 @click.pass_context
 def pullcsv(ctx, project, form_id, csv_dir, zip_dir, keep):
@@ -112,60 +121,29 @@ def pullcsv(ctx, project, form_id, csv_dir, zip_dir, keep):
     navigate to the form on ODK Central, and then examine the URL.
     """
     client = ctx.obj["client"]
-    try:
-        logger.info(
-            "CSV pull initiated: URL %s, project %s, form_id %s",
-            client.url,
-            project,
-            form_id,
-        )
-        pull_csv_zip(client, str(project), form_id, Path(csv_dir), Path(zip_dir))
+    logger.info(
+        "CSV pull initiated: URL %s, project %s, form_id %s",
+        client.url,
+        project,
+        form_id,
+    )
+    pull_csv_zip(client, str(project), form_id, Path(csv_dir), Path(zip_dir))
+    print(
+        f"Successfully saved zip file to {zip_dir} and extracted all CSV files to {csv_dir}"
+    )
+    if keep > 0:
         keep_recent_zips(keep, form_id, Path(zip_dir))
-        logger.info(
-            "CSV pull completed: URL %s, project %s, form_id %s",
-            client.url,
-            project,
-            form_id,
-        )
-    except HTTPError as err:
-        resp = err.response
-        if resp.status_code == 401:
-            print(
-                (
-                    "Sorry, something went wrong. ODK Central did not accept the provided credentials. "
-                    f"ODK Central's message is {resp.text}."
-                )
-            )
-        elif resp.status_code == 404:
-            print(
-                (
-                    "Sorry, something went wrong. The server responded with a 404, Resource not found. "
-                    "ODK Central should not do that. "
-                    f'The provided ODK Central URL is "{client.url}". Is that correct?'
-                )
-            )
-        else:
-            print(
-                (
-                    "Sorry, something went wrong. In response to the request for a CSV zip, ODK Central "
-                    f"responded with the error code {resp.status_code}. "
-                    f"ODK Central's message is {resp.text}. "
-                    "Hopefully that helps!"
-                )
-            )
-        sys.exit(1)
-    except ConnectionError:
-        print(
-            (
-                "Sorry, something went wrong. The request was unable to reach "
-                "the server. Try verifying the internet connection by navigating to "
-                f"{client.url} in a browser, or by pinging the server."
-            )
-        )
-        sys.exit(1)
+        print(f"Successfully ensured at most {keep} zip files are kept")
+    logger.info(
+        "CSV pull completed: URL %s, project %s, form_id %s",
+        client.url,
+        project,
+        form_id,
+    )
 
 
 @main.command()
+@handle_common_errors
 @click.option(
     "--project", required=True, type=int, help="The numeric ID of the project"
 )
@@ -178,6 +156,8 @@ def pullcsv(ctx, project, form_id, csv_dir, zip_dir, keep):
 @click.pass_context
 def push(ctx, project, local_dir):
     """Push ODK submissions to ODK Central."""
+    client = ctx.obj["client"]
+    push_submissions_and_attachments(client, project, local_dir)
 
 
 @main.command()

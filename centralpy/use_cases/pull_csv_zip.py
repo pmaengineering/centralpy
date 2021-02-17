@@ -2,14 +2,17 @@ import datetime
 import logging
 from pathlib import Path
 
+from centralpy.client import CentralClient
 from centralpy.response.csvzip import CsvZip
 
 
 logger = logging.getLogger(__name__)
 
 
-def pull_csv_zip(client, project: str, form_id: str, csv_dir: Path, zip_dir: Path):
-    csv_zip = client.export_submissions_to_csv_zip(project, form_id)
+def pull_csv_zip(
+    client: CentralClient, project: str, form_id: str, csv_dir: Path, zip_dir: Path
+):
+    csv_zip = client.get_submissions_csv_zip(project, form_id)
     logger.info("CSV zip download complete for form_id %s", form_id)
     full_zip_filename = csv_zip.save_zip(zip_dir)
     logger.info("Zip saved to %s", full_zip_filename)
@@ -33,7 +36,7 @@ def keep_recent_zips(keep: int, form_id: str, zip_dir: Path, suffix_format: str 
         except ValueError:
             pass
     if len(zips) != len(result):
-        logger.warn(
+        logger.warning(
             'In directory %s, %d zip files start with "%s", but only %d have date information in the file name.',
             zip_dir,
             len(zips),
