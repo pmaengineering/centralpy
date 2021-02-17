@@ -1,5 +1,3 @@
-import io
-
 import requests
 
 from centralpy.errors import AuthenticationException
@@ -65,15 +63,12 @@ class CentralClient:
             data=data,
         )
         resp.raise_for_status()
-        # return resp.json()["instanceId"]
         return Response(resp)
 
     def post_attachment(self, project, form_id, instance_id, filename, data):
         self.ensure_session()
         add_attachment_url = self.API_ADD_ATTACHMENT.format(
-            project=project,
-            form_id=form_id,
-            instance_id=instance_id,
+            project=project, form_id=form_id, instance_id=instance_id, filename=filename
         )
         resp = requests.post(
             f"{self.url}{add_attachment_url}",

@@ -1,6 +1,9 @@
 from collections import Counter
 import logging
 from pathlib import Path
+import xml.etree.ElementTree as ET
+
+from requests.exceptions import HTTPError
 
 from centralpy.client import CentralClient
 
@@ -19,16 +22,91 @@ def push_submissions_and_attachments(
     """
     found_xml = list(local_dir.glob("**/*.xml"))
     path_counter = Counter(path.parent for path in found_xml)
-    multiples = {k: v for k, v in path_counter if v > 1}
+    logger.info(
+        "Count of XML files discovered in root folder %s: %d", local_dir, len(found_xml)
+    )
+    multiples = {k: v for k, v in path_counter.items() if v > 1}
     if multiples:
         multiples_count = sum(multiples.values())
-        logging.warning(
-            "Count of XML files ignored due to being in a common folder: %d",
+        logger.warning(
+            "Count of XML files skipped due to being in a common folder: %d",
             multiples_count,
         )
-        logging.warning(
-            "Ignored XML files found in these common folders: %s",
+        logger.warning(
+            "The skipped XML files are found in these common folders: %s",
             ", ".join(str(path) for path in multiples),
         )
-    for single_xml in (f for f in found_xml if f.parent not in multiples):
-        pass
+    xml_to_push = (f for f in found_xml if f.parent not in multiples)
+    push_all(xml_to_push, client, project)
+
+
+def push_all(xml_to_push, client, project):
+    bad_resources = set()
+    for single_xml in xml_to_push:
+        with open(single_xml, mode="rb") as f:
+            data = f.read()
+        form_id = get_form_id_from_xml(data)
+        if form_id and form_id not in bad_resources:
+            try:
+                resp = client.post_submission(project, form_id, data)
+                instance_id = resp.json()["instanceId"]
+                logger.info(
+                    "Successfully uploaded instance %s from file %s",
+                    instance_id,
+                    single_xml,
+                )
+                push_attachments(client, project, form_id, instance_id, single_xml)
+            except HTTPError as err:
+                resp = err.response
+                if resp.status_code == 400:
+                    msg = "ODK Central count not understand the uploaded file as a submission: %s"
+                    logger.warning(msg, single_xml)
+                elif resp.status_code == 404:
+                    msg = (
+                        "ODK Central could not find a form with form ID %s. Skipping %s"
+                    )
+                    logger.warning(msg, form_id, single_xml)
+                    bad_resources.add(form_id)
+                elif resp.status_code == 409:
+                    msg = "No change: ODK Central already has a submission with the same instance ID as %s"
+                    logger.warning(msg, single_xml)
+                else:
+                    raise
+        elif form_id in bad_resources:
+            logger.warning(
+                "Skipping XML file with bad form ID %s, file %s", form_id, single_xml
+            )
+        else:
+            logger.warning(
+                "XML file skipped since unable to determine form id: %s", single_xml
+            )
+
+
+def push_attachments(client, project, form_id, instance_id, xml_path):
+    for non_xml in get_non_xml_files(xml_path.parent):
+        filename = non_xml.name
+        with open(non_xml, mode="rb") as f:
+            data = f.read()
+        try:
+            client.post_attachment(project, form_id, instance_id, filename, data)
+            msg = "For instance ID %s, successfully uploaded attachment %s"
+            logger.info(msg, instance_id, filename)
+        except HTTPError:
+            msg = "For instance ID %s, ODK Central did not accept attachment %s"
+            logger.info(msg, instance_id, non_xml)
+
+
+def get_non_xml_files(path: Path):
+    if path.is_dir():
+        files = path.glob("*")
+        return (f for f in files if f.is_file() and f.suffix != ".xml")
+    return iter(())
+
+
+def get_form_id_from_xml(data):
+    try:
+        root = ET.fromstring(data)
+        form_id = root.attrib.get("id")
+        return form_id
+    except ET.ParseError:
+        return None

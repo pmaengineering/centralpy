@@ -4,7 +4,6 @@ import pprint
 import sys
 
 import click
-from requests.exceptions import HTTPError
 
 from centralpy.__version__ import __version__
 from centralpy import CentralClient
@@ -48,6 +47,7 @@ def main(ctx, url, email, password, log_file, verbose, config_file):
     """
     if ctx.invoked_subcommand == "version":
         return
+    # pylint: disable=redefined-outer-name
     config = get_centralpy_config(
         config_file,
         CENTRAL_URL=url,
@@ -157,7 +157,19 @@ def pullcsv(ctx, project, form_id, csv_dir, zip_dir, keep):
 def push(ctx, project, local_dir):
     """Push ODK submissions to ODK Central."""
     client = ctx.obj["client"]
-    push_submissions_and_attachments(client, project, local_dir)
+    logger.info(
+        "Submission push initiated to URL %s, project %s, from local directory %s",
+        client.url,
+        project,
+        local_dir,
+    )
+    push_submissions_and_attachments(client, str(project), Path(local_dir))
+    logger.info(
+        "Submission push completed to URL %s, project %s, from local directory %s",
+        client.url,
+        project,
+        local_dir,
+    )
 
 
 @main.command()
@@ -174,6 +186,7 @@ def version():
 
 
 def get_centralpy_config(config_file, **kwargs):
+    # pylint: disable=redefined-outer-name
     config = {}
     if config_file:
         for line in config_file:
