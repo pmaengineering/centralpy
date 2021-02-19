@@ -2,7 +2,6 @@
 import logging
 from pathlib import Path
 import pprint
-import sys
 
 import click
 
@@ -16,7 +15,7 @@ from centralpy.use_cases import (
 )
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__ + ".v" + __version__)
 
 
 @click.group()
@@ -26,7 +25,9 @@ logger = logging.getLogger(__name__)
 @click.option(
     "--log-file",
     type=click.Path(dir_okay=False),
-    help="Where to save logs. If not provided, then logs are not saved.",
+    default="./centralpy.log",
+    show_default=True,
+    help="Where to save logs.",
 )
 @click.option(
     "--verbose",
@@ -65,23 +66,12 @@ def main(ctx, url, email, password, log_file, verbose, config_file):
     if ctx.invoked_subcommand == "config":
         return
     setup_logging(config.get("CENTRAL_LOG_FILE"), config.get("CENTRAL_VERBOSE"))
-    try:
-        client = CentralClient(
-            config["CENTRAL_URL"],
-            config["CENTRAL_EMAIL"],
-            config["CENTRAL_PASSWORD"],
-        )
-        ctx.obj["client"] = client
-    except KeyError as err:
-        print(
-            "Sorry, unable to create an ODK Central client because of missing information: "
-            f"{err!s}."
-        )
-        print(
-            "Try adding this information to a config file or pass it as a command-line option."
-        )
-        print('Type "centralpy --help" for more information.')
-        sys.exit(1)
+    client = CentralClient(
+        config.get("CENTRAL_URL"),
+        config.get("CENTRAL_EMAIL"),
+        config.get("CENTRAL_PASSWORD"),
+    )
+    ctx.obj["client"] = client
 
 
 @main.command()
@@ -121,7 +111,8 @@ def main(ctx, url, email, password, log_file, verbose, config_file):
     show_default=True,
     help=(
         "The number of zip files to keep in the zip directory, keeping the "
-        "most recent. The number must be 1 or larger for anything to happen."
+        "most recent. The number must be 1 or larger for any old files to be "
+        "deleted."
     ),
 )
 @click.pass_context
@@ -160,8 +151,9 @@ def pullcsv(ctx, project, form_id, csv_dir, zip_dir, keep):
 )
 @click.option(
     "--local-dir",
-    required=True,
     type=click.Path(file_okay=False),
+    default="./",
+    show_default=True,
     help="The directory to push uploads from",
 )
 @click.pass_context

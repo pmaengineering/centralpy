@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 
 from centralpy.client import CentralClient
-from centralpy.response.csvzip import CsvZip
+from centralpy.responses.csvzip import CsvZip
 
 
 logger = logging.getLogger(__name__)

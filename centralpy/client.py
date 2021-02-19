@@ -1,8 +1,8 @@
 """A module to define the CentralClient class."""
 import requests
 
-from centralpy.errors import AuthenticationException
-from centralpy.response import Response, CsvZip
+from centralpy.errors import AuthenticationError
+from centralpy.responses import Response, CsvZip
 
 
 class CentralClient:
@@ -34,7 +34,7 @@ class CentralClient:
     def create_session_token(self) -> None:
         """Create a session token by authenticating with ODK Central."""
         if not self.url or not self.email or not self.password:
-            raise AuthenticationException(
+            raise AuthenticationError(
                 "Not enough information for authentication provided: email is "
                 f'"{self.email}", password is "{self.password}", server URL is "{self.url}"'
             )

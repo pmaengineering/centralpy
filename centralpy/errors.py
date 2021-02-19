@@ -1,9 +1,9 @@
 """Module for custom exceptions in centralpy source code."""
 
 
-class CentralException(Exception):
+class CentralpyError(Exception):
     """Base class for central exceptions"""
 
 
-class AuthenticationException(CentralException):
+class AuthenticationError(CentralpyError):
     """An exception related to authentication"""

@@ -4,6 +4,8 @@ import sys
 
 from requests.exceptions import HTTPError
 
+from centralpy.errors import CentralpyError
+
 
 def handle_common_errors(func):
     """Handle common errors from interacting with ODK Central."""
@@ -12,6 +14,9 @@ def handle_common_errors(func):
     def wrapper(*args, **kwargs):
         try:
             result = func(*args, **kwargs)
+        except CentralpyError as err:
+            print(err)
+            sys.exit(1)
         except HTTPError as err:
             resp = err.response
             if resp.status_code == 401:

@@ -1,4 +1,4 @@
-from centralpy.response.csvzip import CsvZip
+from centralpy.responses.csvzip import CsvZip
 
 
 class Response:
