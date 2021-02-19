@@ -126,7 +126,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'centralpy = central.cli:main',
+            'centralpy = centralpy.cli:main',
         ]
     },
 )
