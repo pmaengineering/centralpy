@@ -1,3 +1,4 @@
+"""A module for handling responses to the export submissions URL."""
 import datetime
 import io
 from pathlib import Path
@@ -5,6 +6,7 @@ import zipfile
 
 
 class CsvZip:
+    """A class representing a response to the export submissions URL."""
 
     ZIPFILE_SUFFIX = "-%Y-%m-%dT%H-%M-%S"
 
@@ -14,9 +16,11 @@ class CsvZip:
 
     @property
     def zip(self):
+        """Convert the response bytes to a ZipFile object."""
         return zipfile.ZipFile(io.BytesIO(self.response.content))
 
     def save_zip(self, out_dir: Path, suffix_format: str = ZIPFILE_SUFFIX):
+        """Save the zip to a directory."""
         suffix = ""
         if suffix_format is not None:
             now = datetime.datetime.utcnow()
@@ -29,6 +33,7 @@ class CsvZip:
         return full_filename
 
     def save_data(self, out_dir: Path):
+        """Extract CSV data files to a directory."""
         saved = []
         this_zip = self.zip
         out_dir.mkdir(parents=True, exist_ok=True)
