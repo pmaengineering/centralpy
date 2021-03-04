@@ -2,6 +2,7 @@
 import functools
 import sys
 
+import requests
 from requests.exceptions import HTTPError
 
 from centralpy.errors import CentralpyError
@@ -37,14 +38,34 @@ def handle_common_errors(func):
                     )
                 )
             elif resp.status_code == 404:
+                good, bad = check_segments(resp)
                 print(
                     (
                         "Sorry, something went wrong. The server responded with a 404, "
                         "Resource not found. Verify the different components of this URL, "
                         "including the host and different path segments: "
-                        f"{resp.url}"
                     )
                 )
+                print(resp.url)
+                if good.request.path_url == "/":
+                    print(
+                        (
+                            "While checking path segments of the original resource, "
+                            "only the root server URL worked. Is this ODK Central?"
+                        )
+                    )
+                elif good:
+                    print(
+                        "While checking path segments of the original resource, was able to find a resource:"
+                    )
+                    print(f" - Status code 404 (bad) : {bad.request.url}")
+                    print(
+                        f" - Status code {good.status_code} (good): {good.request.url}"
+                    )
+                else:
+                    print(
+                        "While checking path segments of the original resource, was unable to get a non-404 response"
+                    )
             else:
                 print(
                     (
@@ -68,3 +89,23 @@ def handle_common_errors(func):
             return result
 
     return wrapper
+
+
+def check_segments(resp):
+    auth_key = "Authorization"
+    authorization = resp.request.headers.get(auth_key)
+    auth_header = {}
+    if authorization:
+        auth_header[auth_key] = authorization
+    host = resp.request.url[: -len(resp.request.path_url)]
+    last_bad = resp.request.path_url
+    last_resp = resp
+    while last_bad:
+        last_slash = last_bad.rfind("/")
+        next_attempt = last_bad[:last_slash]
+        next_resp = requests.get(f"{host}{next_attempt}", headers=auth_header)
+        if next_resp.status_code != 404:
+            return next_resp, last_resp
+        last_bad = next_attempt
+        last_resp = next_resp
+    return None, last_resp

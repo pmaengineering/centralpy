@@ -1,8 +1,13 @@
 """A module to define the CentralClient class."""
+import logging
+
 import requests
 
 from centralpy.errors import AuthenticationError
 from centralpy.responses import Response, CsvZip
+
+
+logger = logging.getLogger(__name__)
 
 
 class CentralClient:
@@ -41,6 +46,10 @@ class CentralClient:
         resp = requests.post(
             f"{self.url}{self.API_SESSIONS}", json=self._get_auth_dict()
         )
+        if resp.status_code == 200:
+            logger.info("Successfully authenticated and obtained session token")
+        else:
+            logger.info("ODK Central was unable to authenticate these credentials")
         resp.raise_for_status()
         self.session_token = resp.json()["token"]
 
