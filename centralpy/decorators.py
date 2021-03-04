@@ -3,7 +3,7 @@ import functools
 import sys
 
 import requests
-from requests.exceptions import HTTPError
+from requests.exceptions import RequestException, HTTPError
 
 from centralpy.errors import CentralpyError
 
@@ -76,14 +76,16 @@ def handle_common_errors(func):
                     )
                 )
             sys.exit(1)
-        except ConnectionError:
+        except RequestException as err:
             print(
                 (
                     "Sorry, something went wrong. The request was unable to reach "
                     "the server. Try verifying the internet connection by navigating to "
-                    "ODK Central in a browser, or by pinging the server."
+                    "ODK Central in a browser, or by pinging the server. Also check the "
+                    "spelling of the server URL:"
                 )
             )
+            print(err.request.url)
             sys.exit(1)
         else:
             return result
@@ -92,6 +94,7 @@ def handle_common_errors(func):
 
 
 def check_segments(resp):
+    """Check the path segments to find a non-404 response."""
     auth_key = "Authorization"
     authorization = resp.request.headers.get(auth_key)
     auth_header = {}

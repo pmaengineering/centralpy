@@ -2,6 +2,7 @@
 import logging
 from pathlib import Path
 import pprint
+import sys
 
 import click
 
@@ -9,6 +10,7 @@ from centralpy.__version__ import __version__
 from centralpy import CentralClient
 from centralpy.decorators import handle_common_errors
 from centralpy.use_cases import (
+    check_connection,
     pull_csv_zip,
     keep_recent_zips,
     push_submissions_and_attachments,
@@ -173,6 +175,60 @@ def push(ctx, project, local_dir):
         project,
         local_dir,
     )
+
+
+@main.command()
+@click.option(
+    "--project",
+    type=int,
+    help="The numeric ID of the project. ODK Central assigns this ID when the project is created.",
+)
+@click.option(
+    "--form-id",
+    type=str,
+    help=(
+        "The form ID (a string), usually defined in the XLSForm settings. "
+        "This is a unique identifier for an ODK form."
+    ),
+)
+@click.pass_context
+def check(ctx, project, form_id):
+    """Check the connection, configuration, and parameters for centralpy.
+
+    These checks are performed in order, checking that centralpy can
+
+    \b
+    1. Connect to the server
+    2. Verify the server is an ODK Central server
+    3. Authenticate the provided credentials
+    4. Check existence and access to the project, if provided
+    5. Check existence and access to the form ID within the project, if provided
+
+    If any of the checks fail, then the remaining checks are not performed.
+
+    TIP: If a project is not provided, but the credentials are valid, then
+    centralpy will show which projects are accessible for the user. Likewise,
+    if there are valid credentials and a valid project, then centralpy will
+    show which form IDs are accessible for the user.
+    """
+    client = ctx.obj["client"]
+    logger.info(
+        "Connection / configuration / parameter check initiated: URL %s, project %s, form_id %s",
+        client.url,
+        project,
+        form_id,
+    )
+    result = check_connection(
+        client, None if project is None else str(project), form_id
+    )
+    logger.info(
+        "Connection / configuration / parameter check completed: URL %s, project %s, form_id %s",
+        client.url,
+        project,
+        form_id,
+    )
+    if not result:
+        sys.exit(1)
 
 
 @main.command()
