@@ -1,11 +1,15 @@
 """A module to check the connection for centralpy."""
 from enum import Enum
+import logging
 from typing import Optional
 
 from requests.exceptions import RequestException, HTTPError
 
 from centralpy.client import CentralClient
 from centralpy.errors import AuthenticationError
+
+
+logger = logging.getLogger(__name__)
 
 
 class Check(Enum):
@@ -19,34 +23,39 @@ class Check(Enum):
         "5. Check existence and access to the form ID within the project, if provided"
     )
 
-    def success_msg(self) -> str:
+    def _format_msg(self, status, width=13):
+
+        return f"{status:<{width}}{self.value}"
+
+    def print_success_msg(self) -> str:
         """Format the message for success."""
-        return f"Success:    {self.value}"
+        print(self._format_msg("Success:"))
 
-    def failure_msg(self) -> str:
+    def print_failure_msg(self) -> str:
         """Format the message for failure."""
-        return f"Failure:    {self.value}"
+        logger.warning("Check failed at step %s", self.value)
+        print(self._format_msg("Failure:"))
 
-    def skip_msg(self) -> str:
+    def print_skip_msg(self) -> str:
         """Format the message for a skip."""
-        return f"Skip:       {self.value}"
+        print(self._format_msg("Skip:"))
 
 
 def check_connect_and_verify(client: CentralClient) -> bool:
     """Check the connection and verify the server is ODK Central."""
     try:
         resp = client.get_version()
-        print(Check.CONNECT.success_msg())
+        Check.CONNECT.print_success_msg()
         if resp.ok and all(i in resp.text for i in ("versions", "client", "server")):
-            print(Check.VERIFY.success_msg())
+            Check.VERIFY.print_success_msg()
         else:
-            print(Check.VERIFY.failure_msg())
+            Check.VERIFY.print_failure_msg()
             print(
                 f"-> Could not verify that this server is ODK Central by checking: {resp.url}"
             )
             return False
     except RequestException:
-        print(Check.CONNECT.failure_msg())
+        Check.CONNECT.print_failure_msg()
         print(
             f"-> Check the internet connection and the spelling of the server URL: {client.url}"
         )
@@ -58,15 +67,15 @@ def check_auth(client: CentralClient) -> bool:
     """Check that ODK Central can authenticate the provided credentials."""
     try:
         client.create_session_token()
-        print(Check.AUTH.success_msg())
+        Check.AUTH.print_success_msg()
     except HTTPError as err:
-        print(Check.AUTH.failure_msg())
+        Check.AUTH.print_failure_msg()
         print(
             "-> ODK Central was unable to authenticate the provided credentials. Please verify email/password."
         )
         return False
     except AuthenticationError as err:
-        print(Check.AUTH.failure_msg())
+        Check.AUTH.print_failure_msg()
         print(err)
         return False
     return True
@@ -78,8 +87,8 @@ def check_project(client: CentralClient, project: Optional[str]) -> bool:
     project_listing = client.get_projects()
     projects = project_listing.get_projects()
     if project is None:
-        print(Check.PROJECT.skip_msg())
-        print(Check.FORM_ID.skip_msg())
+        Check.PROJECT.print_skip_msg()
+        Check.FORM_ID.print_skip_msg()
         print(
             "-> No project ID was provided. These are this user's projects accessible on ODK Central:"
         )
@@ -87,9 +96,9 @@ def check_project(client: CentralClient, project: Optional[str]) -> bool:
             print(f'-> Project {item["id"]}, named "{item["name"]}"')
         return True
     if project_listing.can_access_project(project):
-        print(Check.PROJECT.success_msg())
+        Check.PROJECT.print_success_msg()
         return True
-    print(Check.PROJECT.failure_msg())
+    Check.PROJECT.print_failure_msg()
     if projects:
         print(
             f"-> No access for project {project}. These are this user's projects accessible on ODK Central:"
@@ -109,24 +118,24 @@ def check_form_id(client: CentralClient, project: str, form_id: Optional[str]) -
     form_listing = client.get_forms(project=project)
     forms = form_listing.get_forms()
     if form_id is None:
-        print(Check.FORM_ID.skip_msg())
+        Check.FORM_ID.print_skip_msg()
         print("-> No form ID was provided. These forms were found on ODK Central:")
         for form in forms:
             print(f'-> Form ID "{form["xmlFormId"]}", named "{form["name"]}"')
         return True
     if form_listing.has_form_id(form_id):
-        print(Check.FORM_ID.success_msg())
+        Check.FORM_ID.print_success_msg()
+        return True
+    Check.FORM_ID.print_failure_msg()
+    if forms:
+        print(
+            f'-> Unable to find form ID "{form_id}" in project {project}. These forms were found:'
+        )
+        for form in forms:
+            print(f'-> Form ID "{form["xmlFormId"]}", named "{form["name"]}"')
     else:
-        print(Check.FORM_ID.failure_msg())
-        if forms:
-            print(
-                f'-> Unable to find form ID "{form_id}" in project {project}. These forms were found:'
-            )
-            for form in forms:
-                print(f'-> Form ID "{form["xmlFormId"]}", named "{form["name"]}"')
-        else:
-            print(f"-> No forms found in project {project}.")
-        return False
+        print(f"-> No forms found in project {project}.")
+    return False
 
 
 # pylint: disable=unsubscriptable-object
@@ -147,10 +156,15 @@ def check_connection(
         return False
     has_project = check_project(client, project)
     if project is None:
+        logger.info("All checks through AUTH were successful, the rest skipped")
         return True
     if not has_project:
         return False
     has_form_id = check_form_id(client, project, form_id)
     if not has_form_id:
         return False
+    if form_id is None:
+        logger.info("All checks through PROJECT were successful, the rest skipped")
+    else:
+        logger.info("All checks were successfully performed")
     return True
