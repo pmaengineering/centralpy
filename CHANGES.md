@@ -1,3 +1,9 @@
+# v0.3.0, 5 March 2021
+What's new
+* Added the `check` subcommand
+* Add messaging on 404 responses to help find the cause (a common event due to typos)
+* Add French translation to the README
+
 # v0.2.0, 19 February 2021
 What's new
 * Implemented `pullcsv` and `push` subcommands

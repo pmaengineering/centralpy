@@ -53,6 +53,7 @@ There are then four subcommands.
 
 - [`pullcsv`](#subcommand-pullcsv)
 - [`push`](#subcommand-push)
+- [`check`](#subcommand-check)
 - [`config`](#subcommand-config)
 - [`version`](#subcommand-version)
 
@@ -77,6 +78,8 @@ Option | Description
 
 This subcommand crawls through a local directory looking for XML files to upload. The form ID is autodetected from the XML.
 
+*NOTE* Centralpy expects there to be no more than one XML file per subfolder, which is how instances are saved on the phone by ODK Collect.
+
 The options for `push` are
 
 Option | Description 
@@ -84,6 +87,29 @@ Option | Description
   --project INTEGER      | The numeric ID of the project  (required)
   --local-dir DIRECTORY  | The directory to push uploads from  (default: ./)
   --help                 | Show this message and exit.
+
+## Subcommand: check
+
+Check the connection, configuration, and parameters for centralpy.
+
+These checks are performed in order, checking that centralpy can
+
+1. Connect to the server
+2. Verify the server is an ODK Central server
+3. Authenticate the provided credentials
+4. Check existence and access to the project, if provided
+5. Check existence and access to the form ID within the project, if provided
+
+If any of the checks fail, then the remaining checks are not performed.
+
+*TIP:* If a project is not provided, but the credentials are valid, then centralpy will show which projects are accessible for the user. Likewise, if there are valid credentials and a valid project, then centralpy will show which form IDs are accessible for the user.
+
+Option | Description 
+--- | ---
+  --project INTEGER|  The numeric ID of the project. ODK Central assigns this ID when the project is created.
+  --form-id TEXT|     The form ID (a string), usually defined in the XLSForm settings. This is a unique identifier for an ODK form.
+  --help|             Show this message and exit.
+
 
 ## Subcommand: config
 
@@ -232,6 +258,7 @@ Il y a alors quatre sous-commandes.
 
 - [`pullcsv`](#sous-commande-pullcsv)
 - [`push`](#sous-commande-push)
+- [`check`](#sous-commande-check)
 - [`config`](#sous-commande-config)
 - [`version`](#sous-commande-version)
 
@@ -256,6 +283,8 @@ Option | Description
 
 Cette sous-commande parcourt un répertoire local à la recherche de fichiers XML à télécharger. L'ID de formulaire est détecté automatiquement à partir du XML.
 
+*REMARQUE* Centralpy s'attend à ce qu'il n'y ait pas plus d'un fichier XML par sous-dossier, c'est ainsi que les instances sont enregistrées sur le téléphone par ODK Collect. 
+
 Les options pour `push` sont
 
 Option | Description
@@ -263,6 +292,30 @@ Option | Description
   --project INTEGER | L'ID numérique du projet (obligatoire)
   --local-dir DIRECTORY | Le répertoire à partir duquel envoyer les téléchargements (par défaut: ./)
   --help | Affichez ce message et quittez.
+
+## Sous-commande: check
+
+Vérifiez la connexion, la configuration et les paramètres de centralpy.
+
+Ces contrôles sont effectués dans l'ordre, en vérifiant que centralpy peut
+
+1. Connectez-vous au serveur
+2. Vérifiez que le serveur est un serveur ODK Central
+3. Authentifiez les informations d'identification fournies
+4. Vérifier l'existence et l'accès au projet, le cas échéant
+5. Vérifier l'existence et l'accès à l'ID de formulaire dans le projet, s'il est fourni
+
+Si l'une des vérifications échoue, les vérifications restantes ne sont pas effectuées.
+
+*CONSEIL:* Si un projet n'est pas fourni, mais que les informations d'identification sont valides, alors centralpy montrera quels projets sont accessibles à l'utilisateur. De même, s'il existe des informations d'identification valides et un projet valide, alors centralpy affiche les ID de formulaire accessibles à l'utilisateur.
+
+
+Option | Description
+--- | ---
+  --project INTEGER | L'ID numérique du projet. ODK Central attribue cet ID lors de la création du projet.
+  --form-id TEXT |    L'ID du formulaire (une chaîne), généralement défini dans les paramètres XLSForm. Il s'agit d'un identifiant unique pour un formulaire ODK.
+  --help |            Affichez ce message et quittez.
+
 
 ## Sous-commande: config
 

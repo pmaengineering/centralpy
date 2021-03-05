@@ -160,7 +160,13 @@ def pullcsv(ctx, project, form_id, csv_dir, zip_dir, keep):
 )
 @click.pass_context
 def push(ctx, project, local_dir):
-    """Push ODK submissions to ODK Central."""
+    """Push ODK submissions to ODK Central.
+
+    Centralpy crawls through all subfolders looking for XML files to upload.
+
+    Centralpy expects there to be no more than one XML file per subfolder,
+    which is how instances are saved on the phone by ODK Collect.
+    """
     client = ctx.obj["client"]
     logger.info(
         "Submission push initiated to URL %s, project %s, from local directory %s",
