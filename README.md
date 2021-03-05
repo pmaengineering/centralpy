@@ -33,6 +33,14 @@ FYI: this package's dependencies are
 [requests]: https://requests.readthedocs.io/en/master/
 [click]: https://click.palletsprojects.com/en/master/
 
+## Upgrade
+
+Upgrade this package with
+
+```
+python3 -m pip install --upgrade centralpy
+```
+
 # Usage
 
 The main command `centralpy` does not do anything by itself. It has its own options to configure the program and then delegate to its subcommands.
@@ -237,6 +245,14 @@ python3 -m centralpy --help
 Pour info: les dépendances de ce package sont
 - [`requests`][requests] pour communiquer avec ODK Central
 - [`click`][click] pour composer l'interface de ligne de commande
+
+## Améliorer
+
+Mettez à niveau ce package avec
+
+```
+python3 -m pip install --upgrade centralpy
+```
 
 # Usage
 
