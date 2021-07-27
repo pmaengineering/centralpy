@@ -79,6 +79,7 @@ Option | Description
   --form-id TEXT       | The form ID (a string), usually defined in the XLSForm settings. This is a unique identifier for an ODK form. (required)
   --csv-dir DIRECTORY  | The directory to export CSV files to  (default: ./)
   --zip-dir DIRECTORY  | The directory to save the downloaded zip to  (default: ./)
+  --no-attachments     | If this flag is supplied, then the CSV zip will be downloaded without attachments.
   --keep INTEGER       | The number of zip files to keep in the zip directory, keeping the most recent. The number must be 1 or larger for anything to happen. (default: -1)
   --help               | Show this message and exit.
 
@@ -292,6 +293,7 @@ Option | Description
   --form-id TEXT | L'ID du formulaire (une chaîne), généralement défini dans les paramètres XLSForm. Il s'agit d'un identifiant unique pour un formulaire ODK. (obligatoire)
   --csv-dir DIRECTORY | Le répertoire vers lequel exporter les fichiers CSV (par défaut: ./)
   --zip-dir DIRECTORY | Le répertoire dans lequel enregistrer le zip téléchargé (par défaut: ./)
+  --no-attachments | Si cet indicateur est fourni, le zip CSV sera téléchargé sans pièces jointes.
   --keep INTEGER | Le nombre de fichiers zip à conserver dans le répertoire zip, en conservant les plus récents. Le nombre doit être 1 ou plus pour que quoi que ce soit se passe. (par défaut: -1)
   --help | Affichez ce message et quittez.
 
@@ -424,4 +426,4 @@ CENTRAL_LOG_FILE=centralpy.log
 
 Soumettez des rapports de bogue sur le suivi des problèmes du référentiel Github à l'adresse [https://github.com/pmaengineering/centralpy/issues][issues]. Ou, envoyez un e-mail au responsable à jpringleOURS@jhu.edu (moins l'OURS).
 
-*Dernière mise à jour de la traduction française 03/03/2021*
+*Dernière mise à jour de la traduction française 07/27/2021*

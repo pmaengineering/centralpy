@@ -93,13 +93,20 @@ class CentralClient:
         resp.raise_for_status()
         return FormListing(resp)
 
-    def get_submissions_csv_zip(self, project: str, form_id: str) -> CsvZip:
+    def get_submissions_csv_zip(
+        self, project: str, form_id: str, no_attachments: bool
+    ) -> CsvZip:
         """Get the submissions CSV zip."""
         self.ensure_session()
         export_url = self.API_SUBMISSIONS_EXPORT.format(
             project=project, form_id=form_id
         )
-        resp = requests.get(f"{self.url}{export_url}", headers=self._get_auth_header())
+        params = {}
+        if no_attachments:
+            params["attachments"] = "false"
+        resp = requests.get(
+            f"{self.url}{export_url}", params=params, headers=self._get_auth_header()
+        )
         resp.raise_for_status()
         return CsvZip(resp, form_id)
 

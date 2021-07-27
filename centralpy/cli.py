@@ -108,6 +108,14 @@ def main(ctx, url, email, password, log_file, verbose, config_file):
     help="The directory to save the downloaded zip to",
 )
 @click.option(
+    "--no-attachments",
+    is_flag=True,
+    help=(
+        "If this flag is supplied, then the CSV zip will be downloaded "
+        "without attachments."
+    ),
+)
+@click.option(
     "--keep",
     default=-1,
     show_default=True,
@@ -118,7 +126,7 @@ def main(ctx, url, email, password, log_file, verbose, config_file):
     ),
 )
 @click.pass_context
-def pullcsv(ctx, project, form_id, csv_dir, zip_dir, keep):
+def pullcsv(ctx, project, form_id, csv_dir, zip_dir, no_attachments, keep):
     """Pull CSV data from ODK Central.
 
     An easy way to get the project ID (a number) and the XForm ID is to
@@ -131,7 +139,9 @@ def pullcsv(ctx, project, form_id, csv_dir, zip_dir, keep):
         project,
         form_id,
     )
-    pull_csv_zip(client, str(project), form_id, Path(csv_dir), Path(zip_dir))
+    pull_csv_zip(
+        client, str(project), form_id, Path(csv_dir), Path(zip_dir), no_attachments
+    )
     print(
         f"Successfully saved zip file to {zip_dir} and extracted all CSV files to {csv_dir}"
     )

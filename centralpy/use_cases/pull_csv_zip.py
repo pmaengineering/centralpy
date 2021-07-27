@@ -11,11 +11,20 @@ logger = logging.getLogger(__name__)
 
 
 def pull_csv_zip(
-    client: CentralClient, project: str, form_id: str, csv_dir: Path, zip_dir: Path
+    client: CentralClient,
+    project: str,
+    form_id: str,
+    csv_dir: Path,
+    zip_dir: Path,
+    no_attachments: bool,
 ):
     """Download the CSV zip from ODK Central."""
-    csv_zip = client.get_submissions_csv_zip(project, form_id)
-    logger.info("CSV zip download complete for form_id %s", form_id)
+    csv_zip = client.get_submissions_csv_zip(project, form_id, no_attachments)
+    logger.info(
+        "CSV zip download complete for form_id %s. Attachments included: %s",
+        form_id,
+        not no_attachments,
+    )
     full_zip_filename = csv_zip.save_zip(zip_dir)
     logger.info("Zip saved to %s", full_zip_filename)
     files = csv_zip.save_data(csv_dir)
