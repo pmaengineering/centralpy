@@ -1,3 +1,8 @@
+# v0.4.0, 27 July 2021
+What's new
+* Added the `--no-attachments` option to `pullcsv`
+* Added detail to the logs to say if attachments were downloaded or not
+
 # v0.3.0, 5 March 2021
 What's new
 * Added the `check` subcommand
