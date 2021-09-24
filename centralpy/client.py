@@ -4,7 +4,13 @@ import logging
 import requests
 
 from centralpy.errors import AuthenticationError
-from centralpy.responses import CsvZip, FormListing, ProjectListing, Response
+from centralpy.responses import (
+    CsvZip,
+    FormListing,
+    ProjectListing,
+    Response,
+    SubmissionListing,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -13,6 +19,7 @@ logger = logging.getLogger(__name__)
 class CentralClient:
     """A class representing a client for ODK Central."""
 
+    # fmt: off
     VERSION = "/version.txt"
     API_SESSIONS = "/v1/sessions"
     API_PROJECTS = "/v1/projects"
@@ -20,13 +27,10 @@ class CentralClient:
     API_FORMS = "/v1/projects/{project}/forms"
     API_FORM_DETAILS = "/v1/projects/{project}/forms/{form_id}"
     API_SUBMISSIONS = "/v1/projects/{project}/forms/{form_id}/submissions"
-    API_SUBMISSIONS_EXPORT = (
-        "/v1/projects/{project}/forms/{form_id}/submissions.csv.zip"
-    )
-    API_ATTACHMENTS = (
-        "/v1/projects/{project}/forms/{form_id}/submissions/{instance_id}/attachments"
-    )
+    API_SUBMISSIONS_EXPORT = "/v1/projects/{project}/forms/{form_id}/submissions.csv.zip"
+    API_ATTACHMENTS = "/v1/projects/{project}/forms/{form_id}/submissions/{instance_id}/attachments"
     API_ATTACHMENT_DETAILS = "/v1/projects/{project}/forms/{form_id}/submissions/{instance_id}/attachments/{filename}"
+    # fmt: on
 
     def __init__(self, url: str, email: str, password: str):
         self.url = url
@@ -93,6 +97,16 @@ class CentralClient:
         resp.raise_for_status()
         return FormListing(resp)
 
+    def get_submissions(self, project: str, form_id: str) -> SubmissionListing:
+        """Get the submission listing for the specified form."""
+        self.ensure_session()
+        submissions_url = self.API_SUBMISSIONS.format(project=project, form_id=form_id)
+        resp = requests.get(
+            f"{self.url}{submissions_url}", headers=self._get_auth_header()
+        )
+        resp.raise_for_status()
+        return SubmissionListing(resp)
+
     def get_submissions_csv_zip(
         self, project: str, form_id: str, no_attachments: bool
     ) -> CsvZip:
@@ -110,7 +124,7 @@ class CentralClient:
         resp.raise_for_status()
         return CsvZip(resp, form_id)
 
-    def post_submission(self, project: str, form_id: str, data) -> Response:
+    def post_submission(self, project: str, form_id: str, data: bytes) -> Response:
         """Post a submission to ODK Central."""
         self.ensure_session()
         submission_url = self.API_SUBMISSIONS.format(project=project, form_id=form_id)
@@ -122,7 +136,9 @@ class CentralClient:
         resp.raise_for_status()
         return Response(resp)
 
-    def post_attachment(self, project, form_id, instance_id, filename, data):
+    def post_attachment(
+        self, project: str, form_id: str, instance_id: str, filename: str, data: bytes
+    ):
         """Post an attachment to a submission in ODK Central."""
         self.ensure_session()
         add_attachment_url = self.API_ATTACHMENT_DETAILS.format(

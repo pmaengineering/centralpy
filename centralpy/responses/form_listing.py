@@ -15,5 +15,11 @@ class FormListing:
         """Return the list of forms."""
         return self.response.json()
 
+    def print_all(self):
+        """Print all forms."""
+        for form in self.get_forms():
+            form_id = f'"{form["xmlFormId"]}"'
+            print(f'-> Form ID {form_id:>20}, named "{form["name"]}"')
+
     def __repr__(self):
         return f"FormListing({self.response!r})"

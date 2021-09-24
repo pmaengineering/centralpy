@@ -15,5 +15,10 @@ class ProjectListing:
         """Return the list of projects."""
         return self.response.json()
 
+    def print_all(self):
+        """Print all projects."""
+        for item in self.get_projects():
+            print(f'-> Project {item["id"]:>3}, named "{item["name"]}"')
+
     def __repr__(self):
         return f"ProjectListing({self.response!r})"

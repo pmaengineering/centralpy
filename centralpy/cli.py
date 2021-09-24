@@ -21,11 +21,24 @@ logger = logging.getLogger(__name__ + ".v" + __version__)
 
 
 @click.group()
-@click.option("--url", type=str, help="The URL for the ODK Central server")
-@click.option("--email", type=str, help="An ODK Central user email")
-@click.option("--password", type=str, help="The password for the account")
+@click.option(
+    "--url",
+    "-u",
+    help="The URL for the ODK Central server",
+)
+@click.option(
+    "--email",
+    "-e",
+    help="An ODK Central user email",
+)
+@click.option(
+    "--password",
+    "-p",
+    help="The password for the account",
+)
 @click.option(
     "--log-file",
+    "-l",
     type=click.Path(dir_okay=False),
     default="./centralpy.log",
     show_default=True,
@@ -33,11 +46,13 @@ logger = logging.getLogger(__name__ + ".v" + __version__)
 )
 @click.option(
     "--verbose",
+    "-v",
     is_flag=True,
     help="Display logging messages to console. This cannot be enabled from a config file.",
 )
 @click.option(
     "--config-file",
+    "-c",
     type=click.File(),
     help=(
         "A configuration file with KEY=VALUE defined (one per line). "
@@ -46,7 +61,8 @@ logger = logging.getLogger(__name__ + ".v" + __version__)
 )
 @click.pass_context
 def main(ctx, url, email, password, log_file, verbose, config_file):
-    """This is centralpy, an ODK Central command-line tool.
+    """
+    This is centralpy, an ODK Central command-line tool.
 
     Configure centralpy with a URL and credentials using command-line
     parameters or from a config file. Values passed as parameters on the
@@ -80,14 +96,15 @@ def main(ctx, url, email, password, log_file, verbose, config_file):
 @handle_common_errors
 @click.option(
     "--project",
+    "-p",
     required=True,
     type=int,
     help="The numeric ID of the project. ODK Central assigns this ID when the project is created.",
 )
 @click.option(
     "--form-id",
+    "-f",
     required=True,
-    type=str,
     help=(
         "The form ID (a string), usually defined in the XLSForm settings. "
         "This is a unique identifier for an ODK form."
@@ -95,6 +112,7 @@ def main(ctx, url, email, password, log_file, verbose, config_file):
 )
 @click.option(
     "--csv-dir",
+    "-c",
     default="./",
     show_default=True,
     type=click.Path(file_okay=False),
@@ -102,6 +120,7 @@ def main(ctx, url, email, password, log_file, verbose, config_file):
 )
 @click.option(
     "--zip-dir",
+    "-z",
     default="./",
     show_default=True,
     type=click.Path(file_okay=False),
@@ -109,6 +128,7 @@ def main(ctx, url, email, password, log_file, verbose, config_file):
 )
 @click.option(
     "--no-attachments",
+    "-A",
     is_flag=True,
     help=(
         "If this flag is supplied, then the CSV zip will be downloaded "
@@ -117,6 +137,7 @@ def main(ctx, url, email, password, log_file, verbose, config_file):
 )
 @click.option(
     "--keep",
+    "-k",
     default=-1,
     show_default=True,
     help=(
@@ -159,10 +180,15 @@ def pullcsv(ctx, project, form_id, csv_dir, zip_dir, no_attachments, keep):
 @main.command()
 @handle_common_errors
 @click.option(
-    "--project", required=True, type=int, help="The numeric ID of the project"
+    "--project",
+    "-p",
+    required=True,
+    type=int,
+    help="The numeric ID of the project",
 )
 @click.option(
     "--local-dir",
+    "-l",
     type=click.Path(file_okay=False),
     default="./",
     show_default=True,
@@ -170,7 +196,8 @@ def pullcsv(ctx, project, form_id, csv_dir, zip_dir, no_attachments, keep):
 )
 @click.pass_context
 def push(ctx, project, local_dir):
-    """Push ODK submissions to ODK Central.
+    """
+    Push ODK submissions to ODK Central.
 
     Centralpy crawls through all subfolders looking for XML files to upload.
 
@@ -196,20 +223,27 @@ def push(ctx, project, local_dir):
 @main.command()
 @click.option(
     "--project",
+    "-p",
     type=int,
     help="The numeric ID of the project. ODK Central assigns this ID when the project is created.",
 )
 @click.option(
     "--form-id",
-    type=str,
+    "-f",
     help=(
         "The form ID (a string), usually defined in the XLSForm settings. "
         "This is a unique identifier for an ODK form."
     ),
 )
+@click.option(
+    "--instance-id",
+    "-i",
+    help="An instance ID to check and get information on.",
+)
 @click.pass_context
-def check(ctx, project, form_id):
-    """Check the connection, configuration, and parameters for centralpy.
+def check(ctx, project, form_id, instance_id):
+    """
+    Check the connection, configuration, and parameters for centralpy.
 
     These checks are performed in order, checking that centralpy can
 
@@ -219,6 +253,7 @@ def check(ctx, project, form_id):
     3. Authenticate the provided credentials
     4. Check existence and access to the project, if provided
     5. Check existence and access to the form ID within the project, if provided
+    6. Check existence of the instance ID within the form, if provided
 
     If any of the checks fail, then the remaining checks are not performed.
 
@@ -229,19 +264,23 @@ def check(ctx, project, form_id):
     """
     client = ctx.obj["client"]
     logger.info(
-        "Connection / configuration / parameter check initiated: URL %s, project %s, form_id %s",
+        "Connection / configuration / parameter check initiated: "
+        "URL %s, project %s, form_id %s, instance_id %s",
         client.url,
         project,
         form_id,
+        instance_id,
     )
     result = check_connection(
-        client, None if project is None else str(project), form_id
+        client, None if project is None else str(project), form_id, instance_id
     )
     logger.info(
-        "Connection / configuration / parameter check completed: URL %s, project %s, form_id %s",
+        "Connection / configuration / parameter check completed: "
+        "URL %s, project %s, form_id %s, instance_id %s",
         client.url,
         project,
         form_id,
+        instance_id,
     )
     if not result:
         sys.exit(1)
