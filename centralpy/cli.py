@@ -157,8 +157,7 @@ def main(
 @click.option(
     "--keep",
     "-k",
-    default=-1,
-    show_default=True,
+    type=int,
     help=(
         "The number of zip files to keep in the zip directory, keeping the "
         "most recent. The number must be 1 or larger for any old files to be "
@@ -193,7 +192,7 @@ def pullcsv(
     print(
         f"Successfully saved zip file to {zip_dir} and extracted all CSV files to {csv_dir}"
     )
-    if keep > 0:
+    if keep is not None and keep > 0:
         keep_recent_zips(keep, form_id, Path(zip_dir))
         print(f"Successfully ensured at most {keep} zip files are kept")
     logger.info(
