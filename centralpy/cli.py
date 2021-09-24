@@ -1,8 +1,10 @@
 """CLI for PMA use cases."""
+from io import BufferedReader, TextIOBase
 import logging
 from pathlib import Path
 import pprint
 import sys
+from typing import Tuple
 
 import click
 
@@ -14,10 +16,22 @@ from centralpy.use_cases import (
     pull_csv_zip,
     keep_recent_zips,
     push_submissions_and_attachments,
+    update_attachments_from_sequence,
 )
 
 
 logger = logging.getLogger(__name__ + ".v" + __version__)
+
+
+PROJECT_HELP = "The numeric ID of the project. ODK Central assigns this ID when the project is created."
+FORM_ID_HELP = (
+    "The form ID (a string), usually defined in the XLSForm settings. This is a unique "
+    "identifier for an ODK form."
+)
+INSTANCE_ID_HELP = (
+    "An instance ID, found in the metadata for a submission. This is a unique identifier for an "
+    "ODK submission to a form."
+)
 
 
 @click.group()
@@ -60,7 +74,15 @@ logger = logging.getLogger(__name__ + ".v" + __version__)
     ),
 )
 @click.pass_context
-def main(ctx, url, email, password, log_file, verbose, config_file):
+def main(
+    ctx,
+    url: str,
+    email: str,
+    password: str,
+    log_file: str,
+    verbose: bool,
+    config_file: TextIOBase,
+):
     """
     This is centralpy, an ODK Central command-line tool.
 
@@ -99,16 +121,13 @@ def main(ctx, url, email, password, log_file, verbose, config_file):
     "-p",
     required=True,
     type=int,
-    help="The numeric ID of the project. ODK Central assigns this ID when the project is created.",
+    help=PROJECT_HELP,
 )
 @click.option(
     "--form-id",
     "-f",
     required=True,
-    help=(
-        "The form ID (a string), usually defined in the XLSForm settings. "
-        "This is a unique identifier for an ODK form."
-    ),
+    help=FORM_ID_HELP,
 )
 @click.option(
     "--csv-dir",
@@ -147,7 +166,15 @@ def main(ctx, url, email, password, log_file, verbose, config_file):
     ),
 )
 @click.pass_context
-def pullcsv(ctx, project, form_id, csv_dir, zip_dir, no_attachments, keep):
+def pullcsv(
+    ctx,
+    project: int,
+    form_id: str,
+    csv_dir: str,
+    zip_dir: str,
+    no_attachments: bool,
+    keep: int,
+):
     """Pull CSV data from ODK Central.
 
     An easy way to get the project ID (a number) and the XForm ID is to
@@ -184,7 +211,7 @@ def pullcsv(ctx, project, form_id, csv_dir, zip_dir, no_attachments, keep):
     "-p",
     required=True,
     type=int,
-    help="The numeric ID of the project",
+    help=PROJECT_HELP,
 )
 @click.option(
     "--local-dir",
@@ -195,7 +222,7 @@ def pullcsv(ctx, project, form_id, csv_dir, zip_dir, no_attachments, keep):
     help="The directory to push uploads from",
 )
 @click.pass_context
-def push(ctx, project, local_dir):
+def push(ctx, project: int, local_dir: str):
     """
     Push ODK submissions to ODK Central.
 
@@ -221,27 +248,82 @@ def push(ctx, project, local_dir):
 
 
 @main.command()
+@handle_common_errors
 @click.option(
     "--project",
     "-p",
+    required=True,
     type=int,
-    help="The numeric ID of the project. ODK Central assigns this ID when the project is created.",
+    help=PROJECT_HELP,
 )
 @click.option(
     "--form-id",
     "-f",
-    help=(
-        "The form ID (a string), usually defined in the XLSForm settings. "
-        "This is a unique identifier for an ODK form."
-    ),
+    required=True,
+    help=FORM_ID_HELP,
 )
 @click.option(
     "--instance-id",
     "-i",
-    help="An instance ID to check and get information on.",
+    required=True,
+    help=INSTANCE_ID_HELP,
+)
+@click.option(
+    "--attachment",
+    "-a",
+    required=True,
+    multiple=True,
+    type=click.File(mode="rb"),
+    help="The attachment file to update for the instance ID.",
 )
 @click.pass_context
-def check(ctx, project, form_id, instance_id):
+def update_attachments(
+    ctx, project: int, form_id: str, instance_id: str, attachment: Tuple[BufferedReader]
+):
+    """
+    Update one or more attachments for the given submission.
+
+    To pass multiple attachments, use -a multiple times.
+    """
+    client = ctx.obj["client"]
+    logger.info(
+        "Initiated attachment update for project %s, form_id %s, instance_id %s, using %s",
+        project,
+        form_id,
+        instance_id,
+        [item.name for item in attachment],
+    )
+    update_attachments_from_sequence(
+        client, str(project), form_id, instance_id, attachment
+    )
+    logger.info(
+        "Completed attachment update for project %s, form_id %s, instance_id %s, using %s",
+        project,
+        form_id,
+        instance_id,
+        [item.name for item in attachment],
+    )
+
+
+@main.command()
+@click.option(
+    "--project",
+    "-p",
+    type=int,
+    help=PROJECT_HELP,
+)
+@click.option(
+    "--form-id",
+    "-f",
+    help=FORM_ID_HELP,
+)
+@click.option(
+    "--instance-id",
+    "-i",
+    help=INSTANCE_ID_HELP,
+)
+@click.pass_context
+def check(ctx, project: int, form_id: str, instance_id: str):
     """
     Check the connection, configuration, and parameters for centralpy.
 
@@ -299,7 +381,7 @@ def version():
     print(f"centralpy v{__version__}")
 
 
-def get_centralpy_config(config_file: click.File, **kwargs) -> dict:
+def get_centralpy_config(config_file: TextIOBase, **kwargs) -> dict:
     """Combine configuration from a file and from keyword arguments."""
     # pylint: disable=redefined-outer-name
     config = {}
@@ -315,7 +397,7 @@ def get_centralpy_config(config_file: click.File, **kwargs) -> dict:
     return filtered
 
 
-def setup_logging(log_file: click.File, verbose: bool) -> None:
+def setup_logging(log_file: TextIOBase, verbose: bool) -> None:
     """Set up logging for centralpy."""
     centralpy_logger = logging.getLogger("centralpy")
     centralpy_logger.setLevel(logging.DEBUG)

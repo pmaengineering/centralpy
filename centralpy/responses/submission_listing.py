@@ -25,6 +25,8 @@ class SubmissionListing:
                 f'and has instance ID "{most_recent["instanceId"]}". Total '
                 f"submission count: {len(submissions)}"
             )
+        else:
+            print("-> No submissions found.")
 
     def __repr__(self):
         return f"SubmisionListing({self.response!r})"

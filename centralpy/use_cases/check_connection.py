@@ -153,6 +153,9 @@ def check_instance_id(
         return True
     if submission_listing.has_instance_id(instance_id):
         Check.INSTANCE_ID.print_success_msg()
+        attachment_listing = client.get_attachments(project, form_id, instance_id)
+        print("-> Report on attachments")
+        attachment_listing.print_all()
         return True
     Check.INSTANCE_ID.print_failure_msg()
     if submissions:

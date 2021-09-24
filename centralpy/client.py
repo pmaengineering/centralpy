@@ -5,6 +5,7 @@ import requests
 
 from centralpy.errors import AuthenticationError
 from centralpy.responses import (
+    AttachmentListing,
     CsvZip,
     FormListing,
     ProjectListing,
@@ -106,6 +107,19 @@ class CentralClient:
         )
         resp.raise_for_status()
         return SubmissionListing(resp)
+
+    def get_attachments(
+        self, project: str, form_id: str, instance_id: str
+    ) -> AttachmentListing:
+        self.ensure_session()
+        attachments_url = self.API_ATTACHMENTS.format(
+            project=project, form_id=form_id, instance_id=instance_id
+        )
+        resp = requests.get(
+            f"{self.url}{attachments_url}", headers=self._get_auth_header()
+        )
+        resp.raise_for_status()
+        return AttachmentListing(resp)
 
     def get_submissions_csv_zip(
         self, project: str, form_id: str, no_attachments: bool
