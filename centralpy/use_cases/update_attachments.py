@@ -1,3 +1,4 @@
+"""A module for the use case of updating attachments for an instance."""
 from io import BufferedReader
 import logging
 from pathlib import Path

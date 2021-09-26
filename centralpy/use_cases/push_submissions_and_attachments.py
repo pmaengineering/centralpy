@@ -114,7 +114,6 @@ def get_non_xml_files(path: Path):
     return iter(())
 
 
-# pylint: disable=unsubscriptable-object
 def get_form_id_from_xml(data: bytes) -> Optional[str]:
     """Given an XForm in bytes, get the form ID."""
     try:

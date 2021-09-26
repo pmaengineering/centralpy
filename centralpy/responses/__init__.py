@@ -22,9 +22,8 @@ class Response:
         """Return the response URL."""
         return self.response.url
 
-    # pylint: disable=invalid-name
     @property
-    def ok(self):
+    def ok(self):  # pylint: disable=invalid-name
         """Return if the response status code is 200."""
         return self.response.ok
 

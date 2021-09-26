@@ -48,9 +48,9 @@ class CentralClient:
 
     def _raise_exception_if_missing_auth_info(self):
         if not self.url or not self.email or not self.password:
-            email = '"{}"'.format(self.email) if self.email else "missing"
-            password = '"{}"'.format(self.password) if self.password else "missing"
-            url = '"{}"'.format(self.url) if self.url else "missing"
+            email = f'"{self.email or "missing"}"'
+            password = f'"{self.password or "missing"}"'
+            url = f'"{self.url or "missing"}"'
             raise AuthenticationError(
                 "Not enough information for authentication provided: "
                 f"email is {email}, password is {password}, server URL is {url}."
@@ -111,6 +111,7 @@ class CentralClient:
     def get_attachments(
         self, project: str, form_id: str, instance_id: str
     ) -> AttachmentListing:
+        """Get the attachment listing for the specified instance."""
         self.ensure_session()
         attachments_url = self.API_ATTACHMENTS.format(
             project=project, form_id=form_id, instance_id=instance_id
@@ -150,7 +151,7 @@ class CentralClient:
         resp.raise_for_status()
         return Response(resp)
 
-    def post_attachment(
+    def post_attachment(  # pylint: disable=too-many-arguments
         self, project: str, form_id: str, instance_id: str, filename: str, data: bytes
     ):
         """Post an attachment to a submission in ODK Central."""

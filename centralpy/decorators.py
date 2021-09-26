@@ -1,11 +1,33 @@
 """Custom decorators for centralpy source code."""
 import functools
+from pathlib import Path
 import sys
 
+import click
 import requests
 from requests.exceptions import RequestException, HTTPError
 
 from centralpy.errors import CentralpyError
+
+
+def add_logging_options(func):
+    """Add log_file and verbose options."""
+
+    add_log_file = click.option(
+        "--log-file",
+        "-l",
+        type=click.Path(dir_okay=False),
+        default="./centralpy.log",
+        show_default=True,
+        help="Where to save logs.",
+    )
+    add_verbose = click.option(
+        "--verbose",
+        "-v",
+        is_flag=True,
+        help="Display logging messages to console. This cannot be enabled from a config file.",
+    )
+    return add_log_file(add_verbose(func))
 
 
 def handle_common_errors(func):

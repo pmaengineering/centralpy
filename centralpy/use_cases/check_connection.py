@@ -69,7 +69,7 @@ def check_auth(client: CentralClient) -> bool:
     try:
         client.create_session_token()
         Check.AUTH.print_success_msg()
-    except HTTPError as err:
+    except HTTPError:
         Check.AUTH.print_failure_msg()
         print(
             "-> ODK Central was unable to authenticate the provided credentials. Please verify email/password."
@@ -82,7 +82,6 @@ def check_auth(client: CentralClient) -> bool:
     return True
 
 
-# pylint: disable=unsubscriptable-object
 def check_project(client: CentralClient, project: Optional[str]) -> bool:
     """Check that the provided project is accessible."""
     project_listing = client.get_projects()
@@ -112,7 +111,6 @@ def check_project(client: CentralClient, project: Optional[str]) -> bool:
     return False
 
 
-# pylint: disable=unsubscriptable-object
 def check_form_id(client: CentralClient, project: str, form_id: Optional[str]) -> bool:
     """Check that the provided form ID is a form in the project."""
     form_listing = client.get_forms(project=project)
@@ -166,8 +164,7 @@ def check_instance_id(
     return False
 
 
-# pylint: disable=unsubscriptable-object
-def check_connection(
+def check_connection(  # pylint: disable=too-many-return-statements,
     client: CentralClient,
     project: Optional[str],
     form_id: Optional[str],

@@ -10,7 +10,8 @@ import click
 
 from centralpy.__version__ import __version__
 from centralpy import CentralClient
-from centralpy.decorators import handle_common_errors
+from centralpy.decorators import add_logging_options, handle_common_errors
+from centralpy.loggers import setup_logging
 from centralpy.use_cases import (
     check_connection,
     pull_csv_zip,
@@ -34,7 +35,7 @@ INSTANCE_ID_HELP = (
 )
 
 
-@click.group()
+@click.group(invoke_without_command=True)
 @click.option(
     "--url",
     "-u",
@@ -50,31 +51,18 @@ INSTANCE_ID_HELP = (
     "-p",
     help="The password for the account",
 )
-@click.option(
-    "--log-file",
-    "-l",
-    type=click.Path(dir_okay=False),
-    default="./centralpy.log",
-    show_default=True,
-    help="Where to save logs.",
-)
-@click.option(
-    "--verbose",
-    "-v",
-    is_flag=True,
-    help="Display logging messages to console. This cannot be enabled from a config file.",
-)
+@add_logging_options
 @click.option(
     "--config-file",
     "-c",
     type=click.File(),
     help=(
         "A configuration file with KEY=VALUE defined (one per line). "
-        "Keys should be formatted as CENTRAL_***."
+        "Keys should be formatted as CENTRALPY_***."
     ),
 )
 @click.pass_context
-def main(
+def main(  # pylint: disable=too-many-arguments
     ctx,
     url: str,
     email: str,
@@ -90,26 +78,31 @@ def main(
     parameters or from a config file. Values passed as parameters on the
     command line take precedence over values in a config file.
     """
+    if ctx.invoked_subcommand is None:
+        print(ctx.get_help())
+        return
     if ctx.invoked_subcommand == "version":
         return
-    # pylint: disable=redefined-outer-name
-    config = get_centralpy_config(
+    centralpy_config = get_centralpy_config(
         config_file,
-        CENTRAL_URL=url,
-        CENTRAL_EMAIL=email,
-        CENTRAL_PASSWORD=password,
-        CENTRAL_LOG_FILE=log_file,
-        CENTRAL_VERBOSE=verbose,
+        CENTRALPY_URL=url,
+        CENTRALPY_EMAIL=email,
+        CENTRALPY_PASSWORD=password,
+        CENTRALPY_LOG_FILE=log_file,
+        CENTRALPY_VERBOSE=verbose,
     )
     ctx.ensure_object(dict)
-    ctx.obj["config"] = config
+    ctx.obj["config"] = centralpy_config
     if ctx.invoked_subcommand == "config":
         return
-    setup_logging(config.get("CENTRAL_LOG_FILE"), config.get("CENTRAL_VERBOSE"))
+    setup_logging(
+        centralpy_config.get("CENTRALPY_LOG_FILE"),
+        centralpy_config.get("CENTRALPY_VERBOSE"),
+    )
     client = CentralClient(
-        config.get("CENTRAL_URL"),
-        config.get("CENTRAL_EMAIL"),
-        config.get("CENTRAL_PASSWORD"),
+        centralpy_config.get("CENTRALPY_URL"),
+        centralpy_config.get("CENTRALPY_EMAIL"),
+        centralpy_config.get("CENTRALPY_PASSWORD"),
     )
     ctx.obj["client"] = client
 
@@ -134,7 +127,7 @@ def main(
     "-c",
     default="./",
     show_default=True,
-    type=click.Path(file_okay=False),
+    type=click.Path(file_okay=False, path_type=Path),
     help="The directory to export CSV files to",
 )
 @click.option(
@@ -142,7 +135,7 @@ def main(
     "-z",
     default="./",
     show_default=True,
-    type=click.Path(file_okay=False),
+    type=click.Path(file_okay=False, path_type=Path),
     help="The directory to save the downloaded zip to",
 )
 @click.option(
@@ -165,12 +158,12 @@ def main(
     ),
 )
 @click.pass_context
-def pullcsv(
+def pullcsv(  # pylint: disable=too-many-arguments
     ctx,
     project: int,
     form_id: str,
-    csv_dir: str,
-    zip_dir: str,
+    csv_dir: Path,
+    zip_dir: Path,
     no_attachments: bool,
     keep: int,
 ):
@@ -186,14 +179,12 @@ def pullcsv(
         project,
         form_id,
     )
-    pull_csv_zip(
-        client, str(project), form_id, Path(csv_dir), Path(zip_dir), no_attachments
-    )
+    pull_csv_zip(client, str(project), form_id, csv_dir, zip_dir, no_attachments)
     print(
         f"Successfully saved zip file to {zip_dir} and extracted all CSV files to {csv_dir}"
     )
     if keep is not None and keep > 0:
-        keep_recent_zips(keep, form_id, Path(zip_dir))
+        keep_recent_zips(keep, form_id, zip_dir)
         print(f"Successfully ensured at most {keep} zip files are kept")
     logger.info(
         "CSV pull completed: URL %s, project %s, form_id %s",
@@ -215,13 +206,13 @@ def pullcsv(
 @click.option(
     "--local-dir",
     "-l",
-    type=click.Path(file_okay=False),
+    type=click.Path(file_okay=False, path_type=Path),
     default="./",
     show_default=True,
     help="The directory to push uploads from",
 )
 @click.pass_context
-def push(ctx, project: int, local_dir: str):
+def push(ctx, project: int, local_dir: Path):
     """
     Push ODK submissions to ODK Central.
 
@@ -237,7 +228,7 @@ def push(ctx, project: int, local_dir: str):
         project,
         local_dir,
     )
-    push_submissions_and_attachments(client, str(project), Path(local_dir))
+    push_submissions_and_attachments(client, str(project), local_dir)
     logger.info(
         "Submission push completed to URL %s, project %s, from local directory %s",
         client.url,
@@ -382,34 +373,14 @@ def version():
 
 def get_centralpy_config(config_file: TextIOBase, **kwargs) -> dict:
     """Combine configuration from a file and from keyword arguments."""
-    # pylint: disable=redefined-outer-name
-    config = {}
+    centralpy_config = {}
     if config_file:
         for line in config_file:
             if "=" in line:
                 key, value = line.split("=", 1)
-                config[key.strip()] = value.strip()
+                centralpy_config[key.strip()] = value.strip()
     for key, value in kwargs.items():
-        if key.startswith("CENTRAL_") and value is not None:
-            config[key] = value
-    filtered = {k: v for k, v in config.items() if k.startswith("CENTRAL_")}
+        if key.startswith("CENTRALPY_") and value is not None:
+            centralpy_config[key] = value
+    filtered = {k: v for k, v in centralpy_config.items() if k.startswith("CENTRALPY_")}
     return filtered
-
-
-def setup_logging(log_file: TextIOBase, verbose: bool) -> None:
-    """Set up logging for centralpy."""
-    centralpy_logger = logging.getLogger("centralpy")
-    centralpy_logger.setLevel(logging.DEBUG)
-    formatter = logging.Formatter(
-        fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
-    if verbose:
-        stream_handler = logging.StreamHandler()
-        stream_handler.setLevel(logging.NOTSET)
-        stream_handler.setFormatter(formatter)
-        centralpy_logger.addHandler(stream_handler)
-    if log_file:
-        file_handler = logging.FileHandler(log_file)
-        file_handler.setLevel(logging.NOTSET)
-        file_handler.setFormatter(formatter)
-        centralpy_logger.addHandler(file_handler)

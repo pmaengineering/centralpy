@@ -10,6 +10,7 @@ from centralpy.responses import CsvZip
 logger = logging.getLogger(__name__)
 
 
+# pylint: disable=too-many-arguments
 def pull_csv_zip(
     client: CentralClient,
     project: str,

@@ -1,3 +1,6 @@
+"""A module for the AttachmentListing class."""
+
+
 class AttachmentListing:
     """A class to respresent an attachments listing."""
 
@@ -13,6 +16,7 @@ class AttachmentListing:
         return self.response.json()
 
     def print_all(self):
+        """Print all attachments."""
         attachments = self.get_attachments()
         if not attachments:
             print("-> No attachments found")
