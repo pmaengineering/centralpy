@@ -2,6 +2,7 @@
 import logging
 
 import requests
+from requests.exceptions import RequestException
 
 from centralpy.errors import AuthenticationError
 from centralpy.responses import (
@@ -78,6 +79,8 @@ class CentralClient:
 
     def get_version(self) -> Response:
         """Get the server version information."""
+        if self.url is None:
+            raise RequestException("Client is not configured with a URL.")
         resp = requests.get(f"{self.url}{self.VERSION}")
         return Response(resp)
 

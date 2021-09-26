@@ -57,9 +57,13 @@ def check_connect_and_verify(client: CentralClient) -> bool:
             return False
     except RequestException:
         Check.CONNECT.print_failure_msg()
-        print(
-            f"-> Check the internet connection and the spelling of the server URL: {client.url}"
-        )
+        if client.url is None:
+            print("-> centralpy is not configured with a URL.")
+        else:
+            print(
+                "-> Check the internet connection and the spelling of the server URL:",
+                client.url,
+            )
         return False
     return True
 
