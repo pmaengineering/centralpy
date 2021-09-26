@@ -28,7 +28,7 @@ python3 -m centralpy --help
 
 FYI: this package's dependencies are
 - [`requests`][requests] for communicating with ODK Central
-- [`click`][click] for composing the command-line interface
+- [`click`][click] >=8.0.0 for composing the command-line interface
 
 [requests]: https://requests.readthedocs.io/en/master/
 [click]: https://click.palletsprojects.com/en/master/
@@ -49,19 +49,20 @@ The options for the main command `centralpy` are
 
 Option | Description 
 --- | ---
-  --url TEXT              | The URL for the ODK Central server
-  --email TEXT            | An ODK Central user email
-  --password TEXT         | The password for the account
-  --log-file FILE         | Where to save logs.  (default: ./centralpy.log)
-  --verbose               | Display logging messages to console. This cannot be enabled from a config file.
-  --config-file FILENAME  | A configuration file with KEY=VALUE defined (one per line). Keys should be formatted as `CENTRAL_***`.
+  -u, --url TEXT              | The URL for the ODK Central server
+  -e, --email TEXT            | An ODK Central user email
+  -p, --password TEXT         | The password for the account
+  -l, --log-file FILE         | Where to save logs.  (default: ./centralpy.log)
+  -v, --verbose               | Display logging messages to console. This cannot be enabled from a config file.
+  -c, --config-file FILENAME  | A configuration file with KEY=VALUE defined (one per line). Keys should be formatted as `CENTRALPY_***`.
   --help                  | Show this message and exit.
 
-There are then four subcommands. 
+There are then six subcommands.
 
 - [`pullcsv`](#subcommand-pullcsv)
 - [`push`](#subcommand-push)
 - [`check`](#subcommand-check)
+- [`update-attachments`](#subcommand-update-attachments)
 - [`config`](#subcommand-config)
 - [`version`](#subcommand-version)
 
@@ -75,12 +76,12 @@ The options for `pullcsv` are
 
 Option | Description 
 --- | ---
-  --project INTEGER    | The numeric ID of the project. ODK Central assigns this ID when the project is created.  (required)
-  --form-id TEXT       | The form ID (a string), usually defined in the XLSForm settings. This is a unique identifier for an ODK form. (required)
-  --csv-dir DIRECTORY  | The directory to export CSV files to  (default: ./)
-  --zip-dir DIRECTORY  | The directory to save the downloaded zip to  (default: ./)
-  --no-attachments     | If this flag is supplied, then the CSV zip will be downloaded without attachments.
-  --keep INTEGER       | The number of zip files to keep in the zip directory, keeping the most recent. The number must be 1 or larger for anything to happen. (default: -1)
+  -p, --project INTEGER    | The numeric ID of the project. ODK Central assigns this ID when the project is created.  (required)
+  -f, --form-id TEXT       | The form ID (a string), usually defined in the XLSForm settings. This is a unique identifier for an ODK form. (required)
+  -c, --csv-dir DIRECTORY  | The directory to export CSV files to  (default: ./)
+  -z, --zip-dir DIRECTORY  | The directory to save the downloaded zip to  (default: ./)
+  -A, --no-attachments     | If this flag is supplied, then the CSV zip will be downloaded without attachments.
+  -k, --keep INTEGER       | The number of zip files to keep in the zip directory, keeping the most recent. The number must be 1 or larger for anything to happen.
   --help               | Show this message and exit.
 
 ## Subcommand: push
@@ -93,8 +94,8 @@ The options for `push` are
 
 Option | Description 
 --- | ---
-  --project INTEGER      | The numeric ID of the project  (required)
-  --local-dir DIRECTORY  | The directory to push uploads from  (default: ./)
+  -p, --project INTEGER      | The numeric ID of the project  (required)
+  -l, --local-dir DIRECTORY  | The directory to push uploads from  (default: ./)
   --help                 | Show this message and exit.
 
 ## Subcommand: check
@@ -108,6 +109,7 @@ These checks are performed in order, checking that centralpy can
 3. Authenticate the provided credentials
 4. Check existence and access to the project, if provided
 5. Check existence and access to the form ID within the project, if provided
+6. Check existence of the instance ID within the form, if provided
 
 If any of the checks fail, then the remaining checks are not performed.
 
@@ -115,9 +117,24 @@ If any of the checks fail, then the remaining checks are not performed.
 
 Option | Description 
 --- | ---
-  --project INTEGER|  The numeric ID of the project. ODK Central assigns this ID when the project is created.
-  --form-id TEXT|     The form ID (a string), usually defined in the XLSForm settings. This is a unique identifier for an ODK form.
-  --help|             Show this message and exit.
+  -p, --project INTEGER |  The numeric ID of the project. ODK Central assigns this ID when the project is created.
+  -f, --form-id TEXT |     The form ID (a string), usually defined in the XLSForm settings. This is a unique identifier for an ODK form.
+  --help |             Show this message and exit.
+
+
+## Subcommand: update-attachments
+
+  Update one or more attachments for the given submission.
+
+  To pass multiple attachments, use -a multiple times.
+
+Option | Description 
+--- | ---
+  -p, --project INTEGER | The numeric ID of the project. ODK Central assigns this ID when the project is created.
+  -f, --form-id TEXT | The form ID (a string), usually defined in the XLSForm settings. This is a unique identifier for an ODK form.
+  -i, --instance-id TEXT | An instance ID, found in the metadata for a submission. This is a unique identifier for an ODK submission to a form.
+  -a, --attachment FILENAME | The attachment file to update for the instance ID.
+  --help | Show this message and exit.
 
 
 ## Subcommand: config
@@ -193,10 +210,30 @@ push \
 A config file can be specified for the main command, `centralpy`. The following demonstrates the contents of an example config file:
 
 ```
-CENTRAL_URL=https://odkcentral.example.com
-CENTRAL_EMAIL=manager@example.com
-CENTRAL_PASSWORD=password1234
-CENTRAL_LOG_FILE=centralpy.log
+CENTRALPY_URL=https://odkcentral.example.com
+CENTRALPY_EMAIL=manager@example.com
+CENTRALPY_PASSWORD=password1234
+CENTRALPY_LOG_FILE=centralpy.log
+```
+
+# Usage: check-audits
+
+Find audit files with incorrect number of fields in an entry.
+
+ODK Central expects audit files to have six fields per entry. An entry is
+usually a line. However, using quoting, a CSV field can span multiple lines.
+
+Option | Description
+--- | ---
+  -r, --record TEXT |    Which records to look at. Give a range or a single number. Default is all records.
+  -l, --log-file FILE |  Where to save logs.  (default: ./centralpy.log)
+  -v, --verbose       | Display logging messages to console. This cannot be enabled from a config file.
+  --help               | Show this message and exit.
+
+The command `check-audits` (not prefixed by `centralpy`) or `python3 -m centralpy.check_audits` can be used to check local `audit.csv` files for correct record length (6 fields). ODK Central tends to get into a bad state if these files are downloaded as attachments.
+
+```
+check-audits /path/to/storage
 ```
 
 # Develop
@@ -245,7 +282,7 @@ python3 -m centralpy --help
 
 Pour info: les dépendances de ce package sont
 - [`requests`][requests] pour communiquer avec ODK Central
-- [`click`][click] pour composer l'interface de ligne de commande
+- [`click`][click] >=8.0.0 pour composer l'interface de ligne de commande
 
 ## Améliorer
 
@@ -263,19 +300,20 @@ Les options de la commande principale `centralpy` sont
 
 Option | Description
 --- | ---
-  --url TEXT | L'URL du serveur ODK Central
-  --email TEXT | Un e-mail d'utilisateur ODK Central
-  --password TEXT | Le mot de passe du compte
-  --log-file FILE | Où enregistrer les journaux. (par défaut: ./centralpy.log)
-  --verbose | Afficher les messages de journalisation sur la console. Cela ne peut pas être activé à partir d'un fichier de configuration.
-  --config-file FILENAME | Un fichier de configuration avec KEY = VALUE défini (un par ligne). Les clés doivent être au format `CENTRAL_***`.
+  -u, --url TEXT | L'URL du serveur ODK Central
+  -e, --email TEXT | Un e-mail d'utilisateur ODK Central
+  -p, --password TEXT | Le mot de passe du compte
+  -l, --log-file FILE | Où enregistrer les journaux. (par défaut: ./centralpy.log)
+  -v, --verbose | Afficher les messages de journalisation sur la console. Cela ne peut pas être activé à partir d'un fichier de configuration.
+  -c, --config-file FILENAME | Un fichier de configuration avec KEY = VALUE défini (un par ligne). Les clés doivent être au format `CENTRALPY_***`.
   --help | Affichez ce message et quittez.
 
-Il y a alors quatre sous-commandes.
+Il y a alors six sous-commandes.
 
 - [`pullcsv`](#sous-commande-pullcsv)
 - [`push`](#sous-commande-push)
 - [`check`](#sous-commande-check)
+- [`update-attachments`](#sous-commande-update-attachments)
 - [`config`](#sous-commande-config)
 - [`version`](#sous-commande-version)
 
@@ -289,12 +327,12 @@ Les options pour `pullcsv` sont
 
 Option | Description
 --- | ---
-  --project INTEGER | L'ID numérique du projet. ODK Central attribue cet ID lors de la création du projet. (obligatoire)
-  --form-id TEXT | L'ID du formulaire (une chaîne), généralement défini dans les paramètres XLSForm. Il s'agit d'un identifiant unique pour un formulaire ODK. (obligatoire)
-  --csv-dir DIRECTORY | Le répertoire vers lequel exporter les fichiers CSV (par défaut: ./)
-  --zip-dir DIRECTORY | Le répertoire dans lequel enregistrer le zip téléchargé (par défaut: ./)
-  --no-attachments | Si cet indicateur est fourni, le zip CSV sera téléchargé sans pièces jointes.
-  --keep INTEGER | Le nombre de fichiers zip à conserver dans le répertoire zip, en conservant les plus récents. Le nombre doit être 1 ou plus pour que quoi que ce soit se passe. (par défaut: -1)
+  -p, --project INTEGER | L'ID numérique du projet. ODK Central attribue cet ID lors de la création du projet. (obligatoire)
+  -f, --form-id TEXT | L'ID du formulaire (une chaîne), généralement défini dans les paramètres XLSForm. Il s'agit d'un identifiant unique pour un formulaire ODK. (obligatoire)
+  -c, --csv-dir DIRECTORY | Le répertoire vers lequel exporter les fichiers CSV (par défaut: ./)
+  -z, --zip-dir DIRECTORY | Le répertoire dans lequel enregistrer le zip téléchargé (par défaut: ./)
+  -A, --no-attachments | Si cet indicateur est fourni, le zip CSV sera téléchargé sans pièces jointes.
+  -k, --keep INTEGER | Le nombre de fichiers zip à conserver dans le répertoire zip, en conservant les plus récents. Le nombre doit être 1 ou plus pour que quoi que ce soit se passe.
   --help | Affichez ce message et quittez.
 
 ## Sous-commande: push
@@ -307,8 +345,8 @@ Les options pour `push` sont
 
 Option | Description
 --- | ---
-  --project INTEGER | L'ID numérique du projet (obligatoire)
-  --local-dir DIRECTORY | Le répertoire à partir duquel envoyer les téléchargements (par défaut: ./)
+  -p, --project INTEGER | L'ID numérique du projet (obligatoire)
+  -l, --local-dir DIRECTORY | Le répertoire à partir duquel envoyer les téléchargements (par défaut: ./)
   --help | Affichez ce message et quittez.
 
 ## Sous-commande: check
@@ -330,9 +368,25 @@ Si l'une des vérifications échoue, les vérifications restantes ne sont pas ef
 
 Option | Description
 --- | ---
-  --project INTEGER | L'ID numérique du projet. ODK Central attribue cet ID lors de la création du projet.
-  --form-id TEXT |    L'ID du formulaire (une chaîne), généralement défini dans les paramètres XLSForm. Il s'agit d'un identifiant unique pour un formulaire ODK.
+  -p, --project INTEGER | L'ID numérique du projet. ODK Central attribue cet ID lors de la création du projet.
+  -f, --form-id TEXT |    L'ID du formulaire (une chaîne), généralement défini dans les paramètres XLSForm. Il s'agit d'un identifiant unique pour un formulaire ODK.
+  -i, --instance-id TEXTE | Un identifiant d'instance, trouvé dans les métadonnées d'un soumission. Il s'agit d'un identifiant unique pour un ODK soumission à un formulaire.
   --help |            Affichez ce message et quittez.
+
+
+## Sous-commande: update-attachments
+
+Mettez à jour une ou plusieurs pièces jointes pour la soumission donnée.
+
+   Pour transmettre plusieurs pièces jointes, utilisez -a plusieurs fois.
+
+Options | Description
+--- | ---
+   -p, --project INTEGER | L'ID numérique du projet. ODK Central attribue cet ID lors de la création du projet.
+   -f, --form-id TEXT | L'ID du formulaire (une chaîne), généralement défini dans le Paramètres XLSForm. Il s'agit d'un identifiant unique pour un formulaire ODK.
+   -i, --instance-id TEXTE | Un identifiant d'instance, trouvé dans les métadonnées d'un soumission. Il s'agit d'un identifiant unique pour un Soumission ODK à un formulaire.
+   -a, --attachment FILENAME | Le fichier de pièce jointe à mettre à jour pour l'instance IDENTIFIANT.
+   --help | Affiche ce message et quitte.
 
 
 ## Sous-commande: config
@@ -408,10 +462,30 @@ push \
 Un fichier de configuration peut être spécifié pour la commande principale, `centralpy`. Ce qui suit montre le contenu d'un exemple de fichier de configuration:
 
 ```
-CENTRAL_URL=https://odkcentral.example.com
-CENTRAL_EMAIL=manager@example.com
-CENTRAL_PASSWORD=password1234
-CENTRAL_LOG_FILE=centralpy.log
+CENTRALPY_URL=https://odkcentral.example.com
+CENTRALPY_EMAIL=manager@example.com
+CENTRALPY_PASSWORD=password1234
+CENTRALPY_LOG_FILE=centralpy.log
+```
+
+# Utilisation : check-audits
+
+Trouver des fichiers d'audit avec un nombre incorrect de champs dans une entrée.
+
+ODK Central s'attend à ce que les fichiers d'audit aient six champs par entrée. Une entrée est
+généralement une ligne. Cependant, en utilisant les guillemets, un champ CSV peut s'étendre sur plusieurs lignes.
+
+Option | Description
+--- | ---
+   -r, --record TEXTE | Quels enregistrements consulter. Donnez une plage ou un nombre unique. La valeur par défaut est tous les enregistrements.
+   -l, --log-file FICHIER | Où enregistrer les journaux. (par défaut : ./centralpy.log)
+   -v, --verbose | Afficher les messages de journalisation sur la console. Cela ne peut pas être activé à partir d'un fichier de configuration.
+   --help | Affichez ce message et quittez.
+
+La commande `check-audits` (non préfixée par `centralpy`) ou `python3 -m centralpy.check_audits` peut être utilisée pour vérifier la longueur d'enregistrement correcte des fichiers `audit.csv` locaux (6 champs). ODK Central a tendance à se détériorer si ces fichiers sont téléchargés en tant que pièces jointes.
+
+```
+check-audits /chemin/vers/stockage
 ```
 
 # Développer
@@ -426,4 +500,4 @@ CENTRAL_LOG_FILE=centralpy.log
 
 Soumettez des rapports de bogue sur le suivi des problèmes du référentiel Github à l'adresse [https://github.com/pmaengineering/centralpy/issues][issues]. Ou, envoyez un e-mail au responsable à jpringleOURS@jhu.edu (moins l'OURS).
 
-*Dernière mise à jour de la traduction française 07/27/2021*
+*Dernière mise à jour de la traduction française 09/27/2021*
