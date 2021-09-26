@@ -1,6 +1,5 @@
 """Custom decorators for centralpy source code."""
 import functools
-from pathlib import Path
 import sys
 
 import click

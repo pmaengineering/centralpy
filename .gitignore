@@ -14,3 +14,7 @@ build/
 output/
 *.egg-info
 MANIFEST
+
+*.csv
+*.zip
+*.log
