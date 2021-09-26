@@ -1,6 +1,7 @@
 # v0.5.0, 27 September 2021
 ## Breaking changes
 * Config file keys must start with `CENTRALPY_` instead of `CENTRAL_`
+* Requires click >= 8.0.0
 ## What's new
 * Added installed command `check-audits`, also reachable from `python -m centralpy.check_audits`.
 * Added `update-attachments` subcommand
