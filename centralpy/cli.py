@@ -1,5 +1,5 @@
 """CLI for PMA use cases."""
-from io import BufferedReader, TextIOBase
+from io import BufferedReader, TextIOWrapper
 import logging
 from pathlib import Path
 import pprint
@@ -69,7 +69,7 @@ def main(  # pylint: disable=too-many-arguments
     password: str,
     log_file: str,
     verbose: bool,
-    config_file: TextIOBase,
+    config_file: TextIOWrapper,
 ):
     """
     This is centralpy, an ODK Central command-line tool.
@@ -371,14 +371,20 @@ def version():
     print(f"centralpy v{__version__}")
 
 
-def get_centralpy_config(config_file: TextIOBase, **kwargs) -> dict:
+def get_centralpy_config(config_file: TextIOWrapper, **kwargs) -> dict:
     """Combine configuration from a file and from keyword arguments."""
     centralpy_config = {}
     if config_file:
         for line in config_file:
             if "=" in line:
                 key, value = line.split("=", 1)
-                centralpy_config[key.strip()] = value.strip()
+                if key.strip().startswith("CENTRALPY_"):
+                    centralpy_config[key.strip()] = value.strip()
+        if not centralpy_config:
+            logger.warning(
+                'Trying to use config file "%s" but found no keys named "CENTRALPY_***"',
+                config_file.name,
+            )
     for key, value in kwargs.items():
         if key.startswith("CENTRALPY_") and value is not None:
             centralpy_config[key] = value
