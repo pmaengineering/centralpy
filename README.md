@@ -119,6 +119,7 @@ Option | Description
 --- | ---
   -p, --project INTEGER |  The numeric ID of the project. ODK Central assigns this ID when the project is created.
   -f, --form-id TEXT |     The form ID (a string), usually defined in the XLSForm settings. This is a unique identifier for an ODK form.
+  -i, --instance-id TEXT  | An instance ID, found in the metadata for a submission. This is a unique identifier for an ODK submission to a form.
   --help |             Show this message and exit.
 
 
