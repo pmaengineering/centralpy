@@ -17,9 +17,11 @@ class FormListing:
 
     def print_all(self):
         """Print all forms."""
+        forms = self.get_forms()
+        max_width = max(len(form["xmlFormId"]) for form in forms) + 2
         for form in self.get_forms():
             form_id = f'"{form["xmlFormId"]}"'
-            print(f'-> Form ID {form_id:>20}, named "{form["name"]}"')
+            print(f'-> Form ID {form_id:>{max_width}}, named "{form["name"]}"')
 
     def __repr__(self):
         return f"FormListing({self.response!r})"
