@@ -219,10 +219,11 @@ CENTRALPY_LOG_FILE=centralpy.log
 
 # Usage: check-audits
 
-Find audit files with incorrect number of fields in an entry.
+Find audit files with incorrect number of fields in a record.
 
-ODK Central expects audit files to have six fields per entry. An entry is
-usually a line. However, using quoting, a CSV field can span multiple lines.
+ODK Central expects audit files to have the correct number of fields per record.
+The correct length is established by the header row.
+An record is usually a line. However, using quoting, a CSV field can span multiple lines.
 
 Option | Description
 --- | ---
@@ -231,7 +232,7 @@ Option | Description
   -v, --verbose       | Display logging messages to console. This cannot be enabled from a config file.
   --help               | Show this message and exit.
 
-The command `check-audits` (not prefixed by `centralpy`) or `python3 -m centralpy.check_audits` can be used to check local `audit.csv` files for correct record length (6 fields). ODK Central tends to get into a bad state if these files are downloaded as attachments.
+The command `check-audits` (not prefixed by `centralpy`) or `python3 -m centralpy.check_audits` can be used to check local `audit.csv` files for correct record length. ODK Central tends to get into a bad state if these files are downloaded as attachments.
 
 ```
 check-audits /path/to/storage
@@ -471,10 +472,11 @@ CENTRALPY_LOG_FILE=centralpy.log
 
 # Utilisation : check-audits
 
-Trouver des fichiers d'audit avec un nombre incorrect de champs dans une entrée.
+Trouver des fichiers d'audit avec un nombre incorrect de champs dans un enregistrement.
 
-ODK Central s'attend à ce que les fichiers d'audit aient six champs par entrée. Une entrée est
-généralement une ligne. Cependant, en utilisant les guillemets, un champ CSV peut s'étendre sur plusieurs lignes.
+ODK Central s'attend à ce que les fichiers d'audit aient le nombre correct de champs par enregistrement.
+La longueur correcte est établie par la ligne d'en-tête.
+Un enregistrement est généralement une ligne. Cependant, en utilisant les guillemets, un champ CSV peut s'étendre sur plusieurs lignes.
 
 Option | Description
 --- | ---
@@ -483,7 +485,7 @@ Option | Description
    -v, --verbose | Afficher les messages de journalisation sur la console. Cela ne peut pas être activé à partir d'un fichier de configuration.
    --help | Affichez ce message et quittez.
 
-La commande `check-audits` (non préfixée par `centralpy`) ou `python3 -m centralpy.check_audits` peut être utilisée pour vérifier la longueur d'enregistrement correcte des fichiers `audit.csv` locaux (6 champs). ODK Central a tendance à se détériorer si ces fichiers sont téléchargés en tant que pièces jointes.
+La commande `check-audits` (non préfixée par `centralpy`) ou `python3 -m centralpy.check_audits` peut être utilisée pour vérifier la longueur d'enregistrement correcte des fichiers `audit.csv` locaux. ODK Central a tendance à se détériorer si ces fichiers sont téléchargés en tant que pièces jointes.
 
 ```
 check-audits /chemin/vers/stockage
@@ -501,4 +503,4 @@ check-audits /chemin/vers/stockage
 
 Soumettez des rapports de bogue sur le suivi des problèmes du référentiel Github à l'adresse [https://github.com/pmaengineering/centralpy/issues][issues]. Ou, envoyez un e-mail au responsable à jpringleOURS@jhu.edu (moins l'OURS).
 
-*Dernière mise à jour de la traduction française 09/27/2021*
+*Dernière mise à jour de la traduction française 09/28/2021*
