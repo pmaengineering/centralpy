@@ -21,7 +21,7 @@ class Check(Enum):
     AUTH = "3. Authenticate the provided credentials"
     PROJECT = "4. Check existence and access to the project, if provided"
     FORM_ID = "5. Check existence and access to the form ID within the project, if provided"
-    INSTANCE_ID = "6. Check existence and access to the instance ID within the form, if provided"
+    INSTANCE_ID = "6. Check existence of the instance ID within the form, if provided"
     # fmt: on
 
     def _format_msg(self, status, width=13):

@@ -11,7 +11,6 @@ from centralpy.decorators import add_logging_options
 from centralpy.loggers import setup_logging
 
 
-EXPECTED_LENGTH = 6
 AUDIT_FILENAME = "audit.csv"
 
 
@@ -21,11 +20,15 @@ logger = logging.getLogger("centralpy.check_audits")
 def check_audit(filename: Path, record_range: Optional[range] = None):
     """Check the given audit file for correctness."""
     bad_records = []
+    expected_length = -1
     with open(filename, newline="", encoding="utf-8") as csvfile:
         csvreader = csv.reader(csvfile)
-        for i, row in enumerate(csvreader, start=1):
+        for i, row in enumerate(csvreader):
+            if i == 0:
+                expected_length = len(row)
+                continue
             should_check = i in record_range if record_range else record_range is None
-            if should_check and len(row) != EXPECTED_LENGTH:
+            if should_check and len(row) != expected_length:
                 bad_records.append((i, row))
     return bad_records
 
@@ -101,7 +104,7 @@ def main(
     record_range = parse_record_option_to_range(record)
     all_bad_records = check_audits(source_dir, record_range)
     for filename, bad_records in all_bad_records.items():
-        print(f"Found bad CSV record(s) in {filename}")
+        print(f'Found bad CSV record(s) in "{filename}"')
         for i, bad_record in bad_records:
             print(f"-> Record {i:>4}: {bad_record}")
     if not all_bad_records:

@@ -283,9 +283,19 @@ def update_attachments(
         instance_id,
         [item.name for item in attachment],
     )
-    update_attachments_from_sequence(
+    success = update_attachments_from_sequence(
         client, str(project), form_id, instance_id, attachment
     )
+    for success, stream in zip(success, attachment):
+        if success:
+            print(
+                f'-> Successfully uploaded "{stream.name}" to instance "{instance_id}"'
+            )
+        else:
+            print(
+                f'-> Unable to upload "{stream.name}" to instance "{instance_id}".',
+                'Try the "check" subcommand for more information about this instance.',
+            )
     logger.info(
         "Completed attachment update for project %s, form_id %s, instance_id %s, using %s",
         project,

@@ -2,7 +2,7 @@
 from io import BufferedReader
 import logging
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, List
 
 from requests.exceptions import HTTPError
 
@@ -18,8 +18,9 @@ def update_attachments_from_sequence(
     form_id: str,
     instance_id: str,
     attachments: Tuple[BufferedReader],
-):
+) -> List[bool]:
     """Upload attachments to ODK Central."""
+    success = []
     for item in attachments:
         relative_path = Path(item.name)
         filename = relative_path.name
@@ -27,6 +28,7 @@ def update_attachments_from_sequence(
         try:
             client.post_attachment(project, form_id, instance_id, filename, data)
             logger.info('Successfully uploaded data for attachment "%s"', filename)
+            success.append(True)
         except HTTPError as err:
             response = err.response
             if response.status_code == 404:
@@ -37,5 +39,7 @@ def update_attachments_from_sequence(
                     filename,
                     instance_id,
                 )
+                success.append(False)
             else:
                 raise
+    return success
