@@ -8,7 +8,7 @@ class ProjectListing:
         self.response = response
 
     def can_access_project(self, project: str):
-        """Check if the provided project ID is in the response"""
+        """Check if the provided project ID is in the response."""
         return any(int(project) == item["id"] for item in self.response.json())
 
     def get_projects(self):

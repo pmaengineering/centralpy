@@ -2,8 +2,8 @@
 
 
 class CentralpyError(Exception):
-    """Base class for central exceptions"""
+    """Base class for central exceptions."""
 
 
 class AuthenticationError(CentralpyError):
-    """An exception related to authentication"""
+    """An exception related to authentication."""

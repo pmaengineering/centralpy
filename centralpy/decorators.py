@@ -70,14 +70,13 @@ def handle_common_errors(func):
                 print(resp.url)
                 if good.request.path_url == "/":
                     print(
-                        (
-                            "While checking path segments of the original resource, "
-                            "only the root server URL worked. Is this ODK Central?"
-                        )
+                        "While checking path segments of the original resource, "
+                        "only the root server URL worked. Is this ODK Central?"
                     )
                 elif good:
                     print(
-                        "While checking path segments of the original resource, was able to find a resource:"
+                        "While checking path segments of the original "
+                        "resource, was able to find a resource:"
                     )
                     print(f" - Status code 404 (bad) : {bad.request.url}")
                     print(
@@ -85,7 +84,8 @@ def handle_common_errors(func):
                     )
                 else:
                     print(
-                        "While checking path segments of the original resource, was unable to get a non-404 response"
+                        "While checking path segments of the original "
+                        "resource, was unable to get a non-404 response"
                     )
             else:
                 print(

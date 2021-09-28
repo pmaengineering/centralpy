@@ -95,7 +95,8 @@ def check_project(client: CentralClient, project: Optional[str]) -> bool:
         Check.FORM_ID.print_skip_msg()
         Check.INSTANCE_ID.print_skip_msg()
         print(
-            "-> No project ID was provided. These are this user's projects accessible on ODK Central:"
+            "-> No project ID was provided. These are this user's projects "
+            "accessible on ODK Central:"
         )
         project_listing.print_all()
         return True
@@ -105,12 +106,14 @@ def check_project(client: CentralClient, project: Optional[str]) -> bool:
     Check.PROJECT.print_failure_msg()
     if projects:
         print(
-            f"-> No access for project {project}. These are this user's projects accessible on ODK Central:"
+            f"-> No access for project {project}. These are this user's "
+            "projects accessible on ODK Central:"
         )
         project_listing.print_all()
     else:
         print(
-            "-> No projects are able to be accessed. Have an administrator add this user as a Project Manager."
+            "-> No projects are able to be accessed. Have an administrator "
+            "add this user as a Project Manager."
         )
     return False
 
