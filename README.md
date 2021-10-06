@@ -33,6 +33,12 @@ FYI: this package's dependencies are
 [requests]: https://requests.readthedocs.io/en/master/
 [click]: https://click.palletsprojects.com/en/master/
 
+## Installation from Github
+
+```
+python3 -m pip install --upgrade https://github.com/pmaengineering/centralpy/zipball/master
+```
+
 ## Upgrade
 
 Upgrade this package with
@@ -286,6 +292,12 @@ Pour info: les dépendances de ce package sont
 - [`requests`][requests] pour communiquer avec ODK Central
 - [`click`][click] >=8.0.0 pour composer l'interface de ligne de commande
 
+## Installation depuis Github
+
+```
+python3 -m pip install --upgrade https://github.com/pmaengineering/centralpy/zipball/master
+```
+
 ## Améliorer
 
 Mettez à niveau ce package avec
@@ -503,4 +515,4 @@ check-audits /chemin/vers/stockage
 
 Soumettez des rapports de bogue sur le suivi des problèmes du référentiel Github à l'adresse [https://github.com/pmaengineering/centralpy/issues][issues]. Ou, envoyez un e-mail au responsable à jpringleOURS@jhu.edu (moins l'OURS).
 
-*Dernière mise à jour de la traduction française 09/28/2021*
+*Dernière mise à jour de la traduction française 10/06/2021*
