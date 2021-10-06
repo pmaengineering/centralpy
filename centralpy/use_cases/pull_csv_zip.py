@@ -28,7 +28,7 @@ def pull_csv_zip(
     )
     full_zip_filename = csv_zip.save_zip(zip_dir)
     logger.info("Zip saved to %s", full_zip_filename)
-    files = csv_zip.save_data(csv_dir)
+    files = csv_zip.save_data(full_zip_filename, csv_dir)
     for item in files:
         logger.info('Into directory %s, CSV data file saved: "%s"', csv_dir, item)
 

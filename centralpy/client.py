@@ -137,7 +137,10 @@ class CentralClient:
         if no_attachments:
             params["attachments"] = "false"
         resp = requests.get(
-            f"{self.url}{export_url}", params=params, headers=self._get_auth_header()
+            f"{self.url}{export_url}",
+            params=params,
+            headers=self._get_auth_header(),
+            stream=True,
         )
         resp.raise_for_status()
         return CsvZip(resp, form_id)
