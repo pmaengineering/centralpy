@@ -87,6 +87,7 @@ Option | Description
   -c, --csv-dir DIRECTORY  | The directory to export CSV files to  (default: ./)
   -z, --zip-dir DIRECTORY  | The directory to save the downloaded zip to  (default: ./)
   -A, --no-attachments     | If this flag is supplied, then the CSV zip will be downloaded without attachments.
+  -P, --no-progress-bar    | Do not show progress bar for download.
   -k, --keep INTEGER       | The number of zip files to keep in the zip directory, keeping the most recent. The number must be 1 or larger for anything to happen.
   --help               | Show this message and exit.
 
@@ -346,6 +347,7 @@ Option | Description
   -c, --csv-dir DIRECTORY | Le répertoire vers lequel exporter les fichiers CSV (par défaut: ./)
   -z, --zip-dir DIRECTORY | Le répertoire dans lequel enregistrer le zip téléchargé (par défaut: ./)
   -A, --no-attachments | Si cet indicateur est fourni, le zip CSV sera téléchargé sans pièces jointes.
+  -P, --no-progress-bar | Ne pas afficher la barre de progression pour le téléchargement.
   -k, --keep INTEGER | Le nombre de fichiers zip à conserver dans le répertoire zip, en conservant les plus récents. Le nombre doit être 1 ou plus pour que quoi que ce soit se passe.
   --help | Affichez ce message et quittez.
 
