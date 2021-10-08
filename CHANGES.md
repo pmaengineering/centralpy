@@ -1,3 +1,10 @@
+# v0.5.2, 7 October 2021
+## What's new
+* Display a progress bar when downloading CSV zip
+* Added `--no-progress-bar/-P` option to `pullcsv` command in order not to display progress bar
+## What's changed
+* Centralpy streams CSV zip downloads to conserve memory rather than store everything in memory
+
 # v0.5.0, 27 September 2021
 ## Breaking changes
 * Config file keys must start with `CENTRALPY_` instead of `CENTRAL_`
