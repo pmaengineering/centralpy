@@ -60,4 +60,4 @@ class CsvZip:
         return saved
 
     def __repr__(self):
-        return f'<CsvZip form_id="{self.form_id}">'
+        return f'CsvZip(filename="{self.filename}", form_id="{self.form_id}")'
