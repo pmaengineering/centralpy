@@ -29,9 +29,11 @@ python3 -m centralpy --help
 FYI: this package's dependencies are
 - [`requests`][requests] for communicating with ODK Central
 - [`click`][click] >=8.0.0 for composing the command-line interface
+- [`tqdm`][tqdm] >= 4.62.0 for progress bar feedback
 
 [requests]: https://requests.readthedocs.io/en/master/
 [click]: https://click.palletsprojects.com/en/master/
+[tqdm]: https://github.com/tqdm/tqdm
 
 ## Upgrade
 
@@ -292,6 +294,7 @@ python3 -m centralpy --help
 Pour info: les dépendances de ce package sont
 - [`requests`][requests] pour communiquer avec ODK Central
 - [`click`][click] >=8.0.0 pour composer l'interface de ligne de commande
+- [`tqdm`][tqdm] >= 4.62.0 pour les commentaires de la barre de progression
 
 ## Améliorer
 
@@ -517,4 +520,4 @@ check-audits /chemin/vers/stockage
 
 Soumettez des rapports de bogue sur le suivi des problèmes du référentiel Github à l'adresse [https://github.com/pmaengineering/centralpy/issues][issues]. Ou, envoyez un e-mail au responsable à jpringleOURS@jhu.edu (moins l'OURS).
 
-*Dernière mise à jour de la traduction française 10/06/2021*
+*Dernière mise à jour de la traduction française 10/08/2021*
