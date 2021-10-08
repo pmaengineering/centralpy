@@ -1,5 +1,6 @@
 """A module to define the CentralClient class."""
 import logging
+from pathlib import Path
 
 import requests
 from requests.exceptions import RequestException
@@ -126,7 +127,12 @@ class CentralClient:
         return AttachmentListing(resp)
 
     def get_submissions_csv_zip(
-        self, project: str, form_id: str, no_attachments: bool
+        self,
+        project: str,
+        form_id: str,
+        no_attachments: bool,
+        out_dir: Path,
+        no_progress_bar: bool = True,
     ) -> CsvZip:
         """Get the submissions CSV zip."""
         self.ensure_session()
@@ -136,14 +142,15 @@ class CentralClient:
         params = {}
         if no_attachments:
             params["attachments"] = "false"
-        resp = requests.get(
+        with requests.get(
             f"{self.url}{export_url}",
             params=params,
             headers=self._get_auth_header(),
             stream=True,
-        )
-        resp.raise_for_status()
-        return CsvZip(resp, form_id)
+        ) as resp:
+            resp.raise_for_status()
+            csv_zip = CsvZip.save_zip(resp, out_dir, form_id, no_progress_bar)
+            return csv_zip
 
     def post_submission(self, project: str, form_id: str, data: bytes) -> Response:
         """Post a submission to ODK Central."""

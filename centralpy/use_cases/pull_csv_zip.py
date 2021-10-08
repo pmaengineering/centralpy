@@ -18,17 +18,19 @@ def pull_csv_zip(
     csv_dir: Path,
     zip_dir: Path,
     no_attachments: bool,
+    no_progress: bool,
 ):
     """Download the CSV zip from ODK Central."""
-    csv_zip = client.get_submissions_csv_zip(project, form_id, no_attachments)
+    csv_zip = client.get_submissions_csv_zip(
+        project, form_id, no_attachments, zip_dir, no_progress
+    )
     logger.info(
         "CSV zip download complete for form_id %s. Attachments included: %s",
         form_id,
         not no_attachments,
     )
-    full_zip_filename = csv_zip.save_zip(zip_dir)
-    logger.info("Zip saved to %s", full_zip_filename)
-    files = csv_zip.save_data(full_zip_filename, csv_dir)
+    logger.info("Zip saved to %s", csv_zip.filename)
+    files = csv_zip.extract_files_to(csv_dir)
     for item in files:
         logger.info('Into directory %s, CSV data file saved: "%s"', csv_dir, item)
 

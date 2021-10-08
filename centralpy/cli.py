@@ -148,6 +148,12 @@ def main(  # pylint: disable=too-many-arguments
     ),
 )
 @click.option(
+    "--no-progress-bar",
+    "-P",
+    is_flag=True,
+    help="Do not show progress bar for download.",
+)
+@click.option(
     "--keep",
     "-k",
     type=int,
@@ -165,6 +171,7 @@ def pullcsv(  # pylint: disable=too-many-arguments
     csv_dir: Path,
     zip_dir: Path,
     no_attachments: bool,
+    no_progress_bar: bool,
     keep: int,
 ):
     """Pull CSV data from ODK Central.
@@ -179,7 +186,9 @@ def pullcsv(  # pylint: disable=too-many-arguments
         project,
         form_id,
     )
-    pull_csv_zip(client, str(project), form_id, csv_dir, zip_dir, no_attachments)
+    pull_csv_zip(
+        client, str(project), form_id, csv_dir, zip_dir, no_attachments, no_progress_bar
+    )
     print(
         f"Successfully saved zip file to {zip_dir} and extracted all CSV files to {csv_dir}"
     )
