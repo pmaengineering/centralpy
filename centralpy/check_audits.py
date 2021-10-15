@@ -2,7 +2,7 @@
 import csv
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import Iterable, List, Optional, Tuple
 
 import click
 
@@ -17,19 +17,29 @@ AUDIT_FILENAME = "audit.csv"
 logger = logging.getLogger("centralpy.check_audits")
 
 
-def check_audit(filename: Path, record_range: Optional[range] = None):
-    """Check the given audit file for correctness."""
+def check_audit_data(
+    csvfile: Iterable, record_range: Optional[range] = None
+) -> List[Tuple[int, list]]:
     bad_records = []
     expected_length = -1
+    csvreader = csv.reader(csvfile)
+    for i, row in enumerate(csvreader):
+        if i == 0:
+            expected_length = len(row)
+            continue
+        should_check = i in record_range if record_range is not None else True
+        if should_check and len(row) != expected_length:
+            bad_records.append((i, row))
+    return bad_records
+
+
+def check_audit(
+    filename: Path, record_range: Optional[range] = None
+) -> List[Tuple[int, list]]:
+    """Check the given audit file for correctness."""
+    bad_records = []
     with open(filename, newline="", encoding="utf-8") as csvfile:
-        csvreader = csv.reader(csvfile)
-        for i, row in enumerate(csvreader):
-            if i == 0:
-                expected_length = len(row)
-                continue
-            should_check = i in record_range if record_range else record_range is None
-            if should_check and len(row) != expected_length:
-                bad_records.append((i, row))
+        bad_records.extend(check_audit_data(csvfile, record_range))
     return bad_records
 
 

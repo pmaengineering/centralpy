@@ -17,6 +17,7 @@ from centralpy.use_cases import (
     pull_csv_zip,
     keep_recent_zips,
     push_submissions_and_attachments,
+    report_on_server_audits,
     update_attachments_from_sequence,
 )
 
@@ -311,6 +312,107 @@ def update_attachments(
         form_id,
         instance_id,
         [item.name for item in attachment],
+    )
+
+
+@main.command()
+@handle_common_errors
+@click.option(
+    "--project",
+    "-p",
+    required=True,
+    type=int,
+    help=PROJECT_HELP,
+)
+@click.option(
+    "--form-id",
+    "-f",
+    required=True,
+    help=FORM_ID_HELP,
+)
+@click.option(
+    "--results-file",
+    "-r",
+    required=True,
+    type=click.Path(dir_okay=False, path_type=Path),
+    help=(
+        "Where to save results from checking audits in JSON format. "
+        "This file is meant to be reused from check to check."
+    ),
+)
+@click.option(
+    "--time",
+    "-t",
+    help=(
+        "A relative time string, formatted as #h or #d with # is a number. "
+        'Use "h" for hours and "d" for days. '
+        "Check submissions in the last #h or #d."
+    ),
+)
+@click.option(
+    "--since-prev-results",
+    "-s",
+    is_flag=True,
+    help=(
+        "Check submissions received after the last check (from --results-file). "
+        "If no --time option is given, then the code tries to filter by previous results time."
+    ),
+)
+@click.pass_context
+def check_server_audits(
+    ctx,
+    project: int,
+    form_id: str,
+    results_file: Path,
+    time: str,
+    since_prev_results: bool,
+):
+    """
+    Check audit files on ODK Central for correctness.
+    """
+    client = ctx.obj["client"]
+    logger.info(
+        "Check server audits initiated: project=%s, form_id=%s, results_file=%s, "
+        "time=%s, since_prev_results=%s",
+        repr(project),
+        repr(form_id),
+        repr(str(results_file)),
+        repr(time),
+        repr(since_prev_results),
+    )
+    audit_results = report_on_server_audits(
+        client,
+        str(project),
+        form_id,
+        results_file,
+        time,
+        since_prev_results,
+    )
+    if audit_results.bad_audit:
+        print(
+            f"Audits checked: {audit_results.count_checked}. "
+            f'Project {project}, form_id "{form_id}". '
+            f"Malformed audits found: {len(audit_results.bad_audit)}."
+        )
+        for instance_id, result in audit_results.bad_audit.items():
+            print(f"Instance ID: {instance_id}")
+            for bad_line in result["bad_lines"]:
+                print(f"-> {bad_line}")
+    else:
+        print(
+            f"Audits checked: {audit_results.count_checked}. "
+            f'Project {project}, form_id "{form_id}". '
+            "No malformed audits found."
+        )
+    print(f"Results of check server audits saved to {results_file}.")
+    logger.info(
+        "Check server audits completed: project=%s, form_id=%s, results_file=%s, "
+        "time=%s, since_prev_results=%s",
+        repr(project),
+        repr(form_id),
+        repr(str(results_file)),
+        repr(time),
+        repr(since_prev_results),
     )
 
 

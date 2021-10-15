@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 def update_attachments_from_sequence(
     client: CentralClient,
-    project: int,
+    project: str,
     form_id: str,
     instance_id: str,
     attachments: Tuple[BufferedReader],

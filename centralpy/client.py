@@ -7,6 +7,7 @@ from requests.exceptions import RequestException
 
 from centralpy.errors import AuthenticationError
 from centralpy.responses import (
+    Attachment,
     AttachmentListing,
     CsvZip,
     FormListing,
@@ -179,3 +180,16 @@ class CentralClient:
         )
         resp.raise_for_status()
         return Response(resp)
+
+    def get_attachment(
+        self, project: str, form_id: str, instance_id: str, filename: str
+    ):
+        self.ensure_session()
+        attachment_url = self.API_ATTACHMENT_DETAILS.format(
+            project=project, form_id=form_id, instance_id=instance_id, filename=filename
+        )
+        resp = requests.get(
+            f"{self.url}{attachment_url}", headers=self._get_auth_header()
+        )
+        resp.raise_for_status()
+        return Attachment(resp)
