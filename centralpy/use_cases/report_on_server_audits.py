@@ -6,6 +6,7 @@ from sys import audit
 from typing import Optional
 
 from requests.exceptions import HTTPError
+from tqdm import tqdm
 
 from centralpy.client import CentralClient
 from centralpy.check_audits import check_audit_data
@@ -54,7 +55,11 @@ def report_on_server_audits(
         len(recent_submissions),
         len(instances_to_check),
     )
-    for instance_id in instances_to_check:
+    for instance_id in tqdm(
+        instances_to_check,
+        desc="Submissions",
+        ascii=True,
+    ):
         try:
             attachment = client.get_attachment(
                 project, form_id, instance_id, AUDIT_FILENAME
