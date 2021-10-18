@@ -38,6 +38,7 @@ INSTANCE_ID_HELP = (
 )
 
 
+# pylint: disable=too-many-arguments
 @click.group(invoke_without_command=True)
 @click.option(
     "--url",
@@ -65,7 +66,7 @@ INSTANCE_ID_HELP = (
     ),
 )
 @click.pass_context
-def main(  # pylint: disable=too-many-arguments
+def main(
     ctx,
     url: str,
     email: str,
@@ -167,7 +168,7 @@ def main(  # pylint: disable=too-many-arguments
     ),
 )
 @click.pass_context
-def pullcsv(  # pylint: disable=too-many-arguments
+def pullcsv(
     ctx,
     project: int,
     form_id: str,
@@ -445,25 +446,35 @@ def download_attachments(
         "If no --time option is given, then the code tries to filter by previous report time."
     ),
 )
+@click.option(
+    "--audit-dir",
+    "-a",
+    default="./",
+    show_default=True,
+    type=click.Path(file_okay=False, path_type=Path),
+    help="The directory to save audit files to",
+)
 @click.pass_context
-def check_server_audits(  # pylint: disable=too-many-arguments
+def check_server_audits(
     ctx,
     project: int,
     form_id: str,
     report_file: Path,
     time: str,
     since_prev: bool,
+    audit_dir: Path,
 ):
     """Check audit files on ODK Central for correctness."""
     client = ctx.obj["client"]
     logger.info(
         "Check server audits initiated: project=%s, form_id=%s, report_file=%s, "
-        "time=%s, since_prev=%s",
+        "time=%s, since_prev=%s, audit_dir=%s",
         repr(project),
         repr(form_id),
         repr(str(report_file)),
         repr(time),
         repr(since_prev),
+        repr(str(audit_dir)),
     )
     try:
         audit_report = report_on_server_audits(
@@ -495,12 +506,13 @@ def check_server_audits(  # pylint: disable=too-many-arguments
         print(f"{e.args[0]}")
     logger.info(
         "Check server audits completed: project=%s, form_id=%s, report_file=%s, "
-        "time=%s, since_prev=%s",
+        "time=%s, since_prev=%s, audit_dir=%s",
         repr(project),
         repr(form_id),
         repr(str(report_file)),
         repr(time),
         repr(since_prev),
+        repr(str(audit_dir)),
     )
 
 

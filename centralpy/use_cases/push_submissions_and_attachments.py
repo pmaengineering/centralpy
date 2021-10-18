@@ -61,18 +61,18 @@ def push_all(xmls_to_push: Iterable[Path], client: CentralClient, project: str):
                 )
                 push_attachments(client, project, form_id, instance_id, single_xml)
             except HTTPError as err:
-                resp = err.response
-                if resp.status_code == 400:
+                err_resp = err.response
+                if err_resp.status_code == 400:
                     msg = "ODK Central count not understand the uploaded file as a submission: %s"
                     logger.warning(msg, single_xml)
-                elif resp.status_code == 404:
+                elif err_resp.status_code == 404:
                     msg = (
                         "The server responded with a 404, Resource Not Found for URL %s. "
                         "Skipping %s"
                     )
-                    logger.warning(msg, resp.url, single_xml)
+                    logger.warning(msg, err_resp.url, single_xml)
                     bad_resources.add(form_id)
-                elif resp.status_code == 409:
+                elif err_resp.status_code == 409:
                     msg = (
                         "No change: ODK Central already has a submission with the "
                         "same instance ID as %s"

@@ -5,7 +5,7 @@ from typing import List
 import zipfile
 
 from requests.models import CONTENT_CHUNK_SIZE, Response
-from tqdm import tqdm
+from tqdm import tqdm  # type: ignore
 
 
 class CsvZip:
@@ -13,7 +13,7 @@ class CsvZip:
 
     ZIPFILE_SUFFIX_FMT = "-%Y-%m-%dT%H-%M-%S"
 
-    def __init__(self, filename: str, form_id: str, response: Response):
+    def __init__(self, filename: Path, form_id: str, response: Response):
         self.filename = filename
         self.form_id = form_id
         self.response = response
@@ -25,7 +25,7 @@ class CsvZip:
         out_dir: Path,
         form_id: str,
         no_progress_bar: bool = False,
-    ) -> Path:
+    ) -> "CsvZip":
         """Save the zip to a directory."""
         suffix = datetime.datetime.utcnow().strftime(cls.ZIPFILE_SUFFIX_FMT)
         out_file = f"{form_id}{suffix}.zip"

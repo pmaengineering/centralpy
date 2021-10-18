@@ -28,16 +28,16 @@ class Check(Enum):
 
         return f"{status:<{width}}{self.value}"
 
-    def print_success_msg(self) -> str:
+    def print_success_msg(self) -> None:
         """Format the message for success."""
         print(self._format_msg("Success:"))
 
-    def print_failure_msg(self) -> str:
+    def print_failure_msg(self) -> None:
         """Format the message for failure."""
         logger.warning("Check failed at step %s", self.value)
         print(self._format_msg("Failure:"))
 
-    def print_skip_msg(self) -> str:
+    def print_skip_msg(self) -> None:
         """Format the message for a skip."""
         print(self._format_msg("Skip:"))
 

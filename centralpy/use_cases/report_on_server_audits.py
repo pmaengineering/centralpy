@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Optional
 
 from requests.exceptions import HTTPError
-from tqdm import tqdm
+from tqdm import tqdm  # type: ignore
 
 from centralpy.client import CentralClient
 from centralpy.check_audits import AUDIT_FILENAME, check_audit_data
@@ -164,7 +164,7 @@ class AuditReport:  # pylint: disable=too-many-instance-attributes
         bad_records: list = None,
     ):
         self.pop_from_all(instance_id)
-        audit_dict = dict(checked_at=self.checked_at)
+        audit_dict: dict = dict(checked_at=self.checked_at)
         if bad_records:
             audit_dict["bad_records"] = bad_records
         audit_obj[instance_id] = audit_dict

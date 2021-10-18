@@ -15,7 +15,8 @@ lint: env
 	. env/bin/activate && \
 	python3 -m pylint ${SRC} && \
 	python3 -m pycodestyle ${SRC} && \
-	python3 -m pydocstyle ${SRC}
+	python3 -m pydocstyle ${SRC} && \
+	python3 -m mypy ${SRC}
 
 ## - black      : Run black on the source code
 .PHONY: black

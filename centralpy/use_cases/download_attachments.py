@@ -7,7 +7,7 @@ from requests.exceptions import HTTPError
 from centralpy.client import CentralClient
 
 
-def download_attachments_from_sequence(
+def download_attachments_from_sequence(  # pylint: disable=too-many-arguments
     client: CentralClient,
     project: str,
     form_id: str,
