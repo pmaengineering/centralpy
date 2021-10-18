@@ -32,7 +32,6 @@ def update_attachments_from_sequence(
         except HTTPError as err:
             response = err.response
             if response.status_code == 404:
-                attachments = client.get_attachments(project, form_id, instance_id)
                 logger.warning(
                     'Unable to upload to "%s" for instance ID "%s" '
                     "because it is not an expected attachment",
