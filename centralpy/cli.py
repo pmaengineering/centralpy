@@ -15,6 +15,7 @@ from centralpy.errors import AuditReportError
 from centralpy.loggers import setup_logging
 from centralpy.use_cases import (
     check_connection,
+    download_attachments_from_sequence,
     pull_csv_zip,
     keep_recent_zips,
     push_submissions_and_attachments,
@@ -98,13 +99,13 @@ def main(  # pylint: disable=too-many-arguments
     if ctx.invoked_subcommand == "config":
         return
     setup_logging(
-        centralpy_config.get("CENTRALPY_LOG_FILE"),
-        centralpy_config.get("CENTRALPY_VERBOSE"),
+        str(centralpy_config.get("CENTRALPY_LOG_FILE")),
+        bool(centralpy_config.get("CENTRALPY_VERBOSE")),
     )
     client = CentralClient(
-        centralpy_config.get("CENTRALPY_URL"),
-        centralpy_config.get("CENTRALPY_EMAIL"),
-        centralpy_config.get("CENTRALPY_PASSWORD"),
+        str(centralpy_config.get("CENTRALPY_URL")),
+        str(centralpy_config.get("CENTRALPY_EMAIL")),
+        str(centralpy_config.get("CENTRALPY_PASSWORD")),
     )
     ctx.obj["client"] = client
 
@@ -295,10 +296,10 @@ def update_attachments(
         instance_id,
         [item.name for item in attachment],
     )
-    success = update_attachments_from_sequence(
+    update_success = update_attachments_from_sequence(
         client, str(project), form_id, instance_id, attachment
     )
-    for success, stream in zip(success, attachment):
+    for success, stream in zip(update_success, attachment):
         if success:
             print(
                 f'-> Successfully uploaded "{stream.name}" to instance "{instance_id}"'
@@ -314,6 +315,90 @@ def update_attachments(
         form_id,
         instance_id,
         [item.name for item in attachment],
+    )
+
+
+@main.command()
+@handle_common_errors
+@click.option(
+    "--project",
+    "-p",
+    required=True,
+    type=int,
+    help=PROJECT_HELP,
+)
+@click.option(
+    "--form-id",
+    "-f",
+    required=True,
+    help=FORM_ID_HELP,
+)
+@click.option(
+    "--instance-id",
+    "-i",
+    required=True,
+    help=INSTANCE_ID_HELP,
+)
+@click.option(
+    "--attachment",
+    "-a",
+    required=True,
+    multiple=True,
+    help="The attachment file to download for the instance ID.",
+)
+@click.option(
+    "--download-dir",
+    "-d",
+    default="./",
+    show_default=True,
+    type=click.Path(file_okay=False, path_type=Path),
+    help="The directory to save audit files to",
+)
+@click.pass_context
+def download_attachments(
+    ctx,
+    project: int,
+    form_id: str,
+    instance_id: str,
+    attachment: Tuple[str],
+    download_dir: Path,
+):
+    """
+    Download one or more attachments for the given submission.
+
+    To pass multiple attachments, use -a multiple times.
+
+    Use the check sub-command to see what attachments are available.
+    """
+    logger.info(
+        "Download attachments initiated: project=%s, form_id=%s, instance_id=%s, "
+        "attachment=%s, download_dir=%s",
+        repr(project),
+        repr(form_id),
+        repr(instance_id),
+        repr(attachment),
+        repr(str(download_dir)),
+    )
+    client = ctx.obj["client"]
+    saved_at = download_attachments_from_sequence(
+        client, str(project), form_id, instance_id, attachment, download_dir
+    )
+    for filename, path in zip(attachment, saved_at):
+        if path:
+            print(f'Saved attachment to "{path}"')
+        else:
+            print(
+                f'Unable to download "{filename}". '
+                "Perhaps it is misspelled or missing from the server?"
+            )
+    logger.info(
+        "Download attachments completed: project=%s, form_id=%s, instance_id=%s, "
+        "attachment=%s, download_dir=%s",
+        repr(project),
+        repr(form_id),
+        repr(instance_id),
+        repr(attachment),
+        repr(str(download_dir)),
     )
 
 
