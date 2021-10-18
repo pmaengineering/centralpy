@@ -127,7 +127,7 @@ class CentralClient:
         resp.raise_for_status()
         return AttachmentListing(resp)
 
-    def get_submissions_csv_zip(
+    def get_submissions_csv_zip(  # pylint: disable=too-many-arguments
         self,
         project: str,
         form_id: str,
@@ -183,7 +183,8 @@ class CentralClient:
 
     def get_attachment(
         self, project: str, form_id: str, instance_id: str, filename: str
-    ):
+    ) -> Attachment:
+        """Get an attachment."""
         self.ensure_session()
         attachment_url = self.API_ATTACHMENT_DETAILS.format(
             project=project, form_id=form_id, instance_id=instance_id, filename=filename

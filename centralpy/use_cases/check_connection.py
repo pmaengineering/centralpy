@@ -180,9 +180,8 @@ def check_connection(  # pylint: disable=too-many-return-statements,
     """
     Check the connection, configuration, and parameters for centralpy.
 
-    Returns:
-        True if the check was successful. False if the check was not
-        successful.
+    Returns True if the check was successful. False if the check was
+    not successful.
     """
     connect_and_verify = check_connect_and_verify(client)
     if not connect_and_verify:

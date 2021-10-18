@@ -7,3 +7,7 @@ class CentralpyError(Exception):
 
 class AuthenticationError(CentralpyError):
     """An exception related to authentication."""
+
+
+class AuditReportError(CentralpyError):
+    """An exception for an AuditReport in an inconsistent state."""

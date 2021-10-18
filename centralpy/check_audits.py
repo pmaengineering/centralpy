@@ -20,6 +20,7 @@ logger = logging.getLogger("centralpy.check_audits")
 def check_audit_data(
     csvfile: Iterable, record_range: Optional[range] = None
 ) -> List[Tuple[int, list]]:
+    """Check the data in an audit for correctness."""
     bad_records = []
     expected_length = -1
     csvreader = csv.reader(csvfile)

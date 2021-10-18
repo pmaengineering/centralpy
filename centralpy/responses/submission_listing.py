@@ -27,6 +27,14 @@ class SubmissionListing:
     def get_most_recent(
         self, relative_time: str = None, absolute_time: str = None
     ) -> list:
+        """
+        Get the most recent submissions based on relative or absolute time.
+
+        If both are given, then the both conditions are satistfied (the max)
+        is used. If neither is given, then return all.
+
+        Result is sorted, descending in time.
+        """
         relative_cutoff = relative_time_string_to_cutoff(relative_time)
         absolute_cutoff = absolute_time_string_to_cutoff(absolute_time)
         if not relative_cutoff and not absolute_cutoff:
@@ -59,12 +67,18 @@ class SubmissionListing:
 
 
 def absolute_time_string_to_cutoff(absolute_time: Optional[str]) -> Optional[datetime]:
+    """Convert a ISO format string to date-time."""
     if not absolute_time:
         return None
     return datetime.fromisoformat(absolute_time)
 
 
 def relative_time_string_to_cutoff(relative_time: Optional[str]) -> Optional[datetime]:
+    """
+    Convert a relative time string to date-time.
+
+    The returned date-time is relative to now.
+    """
     if not relative_time:
         return None
     delta = time_string_to_time_delta(relative_time)
@@ -76,6 +90,12 @@ def relative_time_string_to_cutoff(relative_time: Optional[str]) -> Optional[dat
 
 
 def time_string_to_time_delta(time_string: str) -> timedelta:
+    """
+    Convert a relative time string to a time-delta.
+
+    The only formats currently supported are #h and #d where # is a positive
+    number.
+    """
     hours = 0
     hours_found = re.match(r"(\d+)h", time_string)
     if hours_found:
@@ -88,5 +108,6 @@ def time_string_to_time_delta(time_string: str) -> timedelta:
 
 
 def odk_central_date_to_datetime(date_string: str) -> datetime:
+    """Convert a date-time string from ODK Central to date-time."""
     date_time, _ = date_string.split("Z")  # _ == "" always
     return datetime.fromisoformat(f"{date_time}+00:00")

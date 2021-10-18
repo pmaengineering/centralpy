@@ -25,6 +25,6 @@ class Response:
     def json(self):
         """Return the response as a JSON object."""
         return self.response.json()
-    
+
     def __repr__(self):
         return f"Response({self.response!r})"

@@ -12,7 +12,10 @@ help: makefile
 ## - lint       : Run pylint on the source code
 .PHONY: lint
 lint: env
-	. env/bin/activate && python3 -m pylint ${SRC}
+	. env/bin/activate && \
+	python3 -m pylint ${SRC} && \
+	python3 -m pycodestyle ${SRC} && \
+	python3 -m pydocstyle ${SRC}
 
 ## - black      : Run black on the source code
 .PHONY: black

@@ -11,6 +11,7 @@ import click
 from centralpy.__version__ import __version__
 from centralpy import CentralClient
 from centralpy.decorators import add_logging_options, handle_common_errors
+from centralpy.errors import AuditReportError
 from centralpy.loggers import setup_logging
 from centralpy.use_cases import (
     check_connection,
@@ -73,7 +74,7 @@ def main(  # pylint: disable=too-many-arguments
     config_file: TextIOWrapper,
 ):
     """
-    This is centralpy, an ODK Central command-line tool.
+    Meet centralpy, an ODK Central command-line tool.
 
     Configure centralpy with a URL and credentials using command-line
     parameters or from a config file. Values passed as parameters on the
@@ -175,7 +176,8 @@ def pullcsv(  # pylint: disable=too-many-arguments
     no_progress_bar: bool,
     keep: int,
 ):
-    """Pull CSV data from ODK Central.
+    """
+    Pull CSV data from ODK Central.
 
     An easy way to get the project ID (a number) and the XForm ID is to
     navigate to the form on ODK Central, and then examine the URL.
@@ -331,7 +333,7 @@ def update_attachments(
     help=FORM_ID_HELP,
 )
 @click.option(
-    "--results-file",
+    "--report-file",
     "-r",
     required=True,
     type=click.Path(dir_okay=False, path_type=Path),
@@ -350,69 +352,70 @@ def update_attachments(
     ),
 )
 @click.option(
-    "--since-prev-results",
+    "--since-prev",
     "-s",
     is_flag=True,
     help=(
-        "Check submissions received after the last check (from --results-file). "
-        "If no --time option is given, then the code tries to filter by previous results time."
+        "Check submissions received after the last check (from --report-file). "
+        "If no --time option is given, then the code tries to filter by previous report time."
     ),
 )
 @click.pass_context
-def check_server_audits(
+def check_server_audits(  # pylint: disable=too-many-arguments
     ctx,
     project: int,
     form_id: str,
-    results_file: Path,
+    report_file: Path,
     time: str,
-    since_prev_results: bool,
+    since_prev: bool,
 ):
-    """
-    Check audit files on ODK Central for correctness.
-    """
+    """Check audit files on ODK Central for correctness."""
     client = ctx.obj["client"]
     logger.info(
-        "Check server audits initiated: project=%s, form_id=%s, results_file=%s, "
-        "time=%s, since_prev_results=%s",
+        "Check server audits initiated: project=%s, form_id=%s, report_file=%s, "
+        "time=%s, since_prev=%s",
         repr(project),
         repr(form_id),
-        repr(str(results_file)),
+        repr(str(report_file)),
         repr(time),
-        repr(since_prev_results),
+        repr(since_prev),
     )
-    audit_results = report_on_server_audits(
-        client,
-        str(project),
-        form_id,
-        results_file,
-        time,
-        since_prev_results,
-    )
-    if audit_results.bad_audit:
-        print(
-            f"Audits checked: {audit_results.count_checked}. "
-            f'Project {project}, form_id "{form_id}". '
-            f"Malformed audits found: {len(audit_results.bad_audit)}."
+    try:
+        audit_report = report_on_server_audits(
+            client,
+            str(project),
+            form_id,
+            report_file,
+            time,
+            since_prev,
         )
-        for instance_id, result in audit_results.bad_audit.items():
-            print(f"Instance ID: {instance_id}")
-            for bad_line in result["bad_lines"]:
-                print(f"-> {bad_line}")
-    else:
-        print(
-            f"Audits checked: {audit_results.count_checked}. "
-            f'Project {project}, form_id "{form_id}". '
-            "No malformed audits found."
-        )
-    print(f"Results of check server audits saved to {results_file}.")
+        if audit_report.bad_audit:
+            print(
+                f"Audits checked: {audit_report.count_checked}. "
+                f'Project {project}, form_id "{form_id}". '
+                f"Malformed audits found: {len(audit_report.bad_audit)}."
+            )
+            for instance_id, result in audit_report.bad_audit.items():
+                print(f"Instance ID: {instance_id}")
+                for i, bad_record in result["bad_records"]:
+                    print(f"-> Record {i:>4}: {bad_record}")
+        else:
+            print(
+                f"Audits checked: {audit_report.count_checked}. "
+                f'Project {project}, form_id "{form_id}". '
+                "No malformed audits found."
+            )
+        print(f"Results of check server audits saved to {report_file}.")
+    except AuditReportError as e:
+        print(f"{e.args[0]}")
     logger.info(
-        "Check server audits completed: project=%s, form_id=%s, results_file=%s, "
-        "time=%s, since_prev_results=%s",
+        "Check server audits completed: project=%s, form_id=%s, report_file=%s, "
+        "time=%s, since_prev=%s",
         repr(project),
         repr(form_id),
-        repr(str(results_file)),
+        repr(str(report_file)),
         repr(time),
-        repr(since_prev_results),
+        repr(since_prev),
     )
 
 
@@ -434,7 +437,7 @@ def check_server_audits(
     help=INSTANCE_ID_HELP,
 )
 @click.pass_context
-def check(ctx, project: int, form_id: str, instance_id: str):
+def check(ctx, project: int, form_id: str, instance_id: str):  # noqa: D301
     """
     Check the connection, configuration, and parameters for centralpy.
 

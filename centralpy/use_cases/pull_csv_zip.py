@@ -43,8 +43,9 @@ def keep_recent_zips(keep: int, form_id: str, zip_dir: Path, suffix_format: str 
     result = []
     for zip_path in zips:
         stem = zip_path.stem
-        time_suffix = stem[len(form_id) :]
-        fmt = CsvZip.ZIPFILE_SUFFIX if suffix_format is None else suffix_format
+        form_id_len = len(form_id)
+        time_suffix = stem[form_id_len:]
+        fmt = CsvZip.ZIPFILE_SUFFIX_FMT if suffix_format is None else suffix_format
         try:
             date_time = datetime.datetime.strptime(time_suffix, fmt)
             result.append((date_time, zip_path))

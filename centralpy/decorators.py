@@ -11,7 +11,6 @@ from centralpy.errors import CentralpyError
 
 def add_logging_options(func):
     """Add log_file and verbose options."""
-
     add_log_file = click.option(
         "--log-file",
         "-l",

@@ -2,7 +2,7 @@
 init-hook='import os, sys; sys.path.append(os.getenv("PROJECT_ROOT", "."))'
 
 [BASIC]
-good-names=f,i,j,k,ex,Run,_
+good-names=e,f,i,j,k,z,ex,Run,_
 
 [FORMAT]
 max-line-length=120

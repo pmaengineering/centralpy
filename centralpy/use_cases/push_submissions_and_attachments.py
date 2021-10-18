@@ -16,7 +16,8 @@ logger = logging.getLogger(__name__)
 def push_submissions_and_attachments(
     client: CentralClient, project: str, local_dir: Path
 ):
-    """Push submissions and attachments to ODK Central.
+    """
+    Push submissions and attachments to ODK Central.
 
     This routine expects that individual XML files are enclosed in individual
     folders. Attachments should be alongside the XML files that they are
