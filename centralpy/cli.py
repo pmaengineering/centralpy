@@ -20,7 +20,7 @@ from centralpy.use_cases import (
     keep_recent_zips,
     push_submissions_and_attachments,
     report_on_server_audits,
-    update_attachments_from_sequence,
+    upload_attachments_from_sequence,
 )
 
 
@@ -278,29 +278,29 @@ def push(ctx, project: int, local_dir: Path):
     required=True,
     multiple=True,
     type=click.File(mode="rb"),
-    help="The attachment file to update for the instance ID.",
+    help="The attachment file to upload for the instance ID.",
 )
 @click.pass_context
-def update_attachments(
+def upload_attachments(
     ctx, project: int, form_id: str, instance_id: str, attachment: Tuple[BufferedReader]
 ):
     """
-    Update one or more attachments for the given submission.
+    Upload one or more attachments for the given submission.
 
     To pass multiple attachments, use -a multiple times.
     """
     client = ctx.obj["client"]
     logger.info(
-        "Initiated attachment update for project %s, form_id %s, instance_id %s, using %s",
+        "Initiated attachment upload for project %s, form_id %s, instance_id %s, using %s",
         project,
         form_id,
         instance_id,
         [item.name for item in attachment],
     )
-    update_success = update_attachments_from_sequence(
+    upload_success = upload_attachments_from_sequence(
         client, str(project), form_id, instance_id, attachment
     )
-    for success, stream in zip(update_success, attachment):
+    for success, stream in zip(upload_success, attachment):
         if success:
             print(
                 f'-> Successfully uploaded "{stream.name}" to instance "{instance_id}"'
@@ -311,7 +311,7 @@ def update_attachments(
                 'Try the "check" subcommand for more information about this instance.',
             )
     logger.info(
-        "Completed attachment update for project %s, form_id %s, instance_id %s, using %s",
+        "Completed attachment upload for project %s, form_id %s, instance_id %s, using %s",
         project,
         form_id,
         instance_id,

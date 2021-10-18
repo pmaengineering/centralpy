@@ -70,7 +70,7 @@ There are then six subcommands.
 - [`pullcsv`](#subcommand-pullcsv)
 - [`push`](#subcommand-push)
 - [`check`](#subcommand-check)
-- [`update-attachments`](#subcommand-update-attachments)
+- [`upload-attachments`](#subcommand-upload-attachments)
 - [`config`](#subcommand-config)
 - [`version`](#subcommand-version)
 
@@ -132,9 +132,9 @@ Option | Description
   --help |             Show this message and exit.
 
 
-## Subcommand: update-attachments
+## Subcommand: upload-attachments
 
-  Update one or more attachments for the given submission.
+  Upload one or more attachments for the given submission.
 
   To pass multiple attachments, use -a multiple times.
 
@@ -143,7 +143,7 @@ Option | Description
   -p, --project INTEGER | The numeric ID of the project. ODK Central assigns this ID when the project is created.
   -f, --form-id TEXT | The form ID (a string), usually defined in the XLSForm settings. This is a unique identifier for an ODK form.
   -i, --instance-id TEXT | An instance ID, found in the metadata for a submission. This is a unique identifier for an ODK submission to a form.
-  -a, --attachment FILENAME | The attachment file to update for the instance ID.
+  -a, --attachment FILENAME | The attachment file to upload for the instance ID.
   --help | Show this message and exit.
 
 
@@ -331,7 +331,7 @@ Il y a alors six sous-commandes.
 - [`pullcsv`](#sous-commande-pullcsv)
 - [`push`](#sous-commande-push)
 - [`check`](#sous-commande-check)
-- [`update-attachments`](#sous-commande-update-attachments)
+- [`upload-attachments`](#sous-commande-upload-attachments)
 - [`config`](#sous-commande-config)
 - [`version`](#sous-commande-version)
 
@@ -393,7 +393,7 @@ Option | Description
   --help |            Affichez ce message et quittez.
 
 
-## Sous-commande: update-attachments
+## Sous-commande: upload-attachments
 
 Mettez à jour une ou plusieurs pièces jointes pour la soumission donnée.
 
@@ -520,4 +520,4 @@ check-audits /chemin/vers/stockage
 
 Soumettez des rapports de bogue sur le suivi des problèmes du référentiel Github à l'adresse [https://github.com/pmaengineering/centralpy/issues][issues]. Ou, envoyez un e-mail au responsable à jpringleOURS@jhu.edu (moins l'OURS).
 
-*Dernière mise à jour de la traduction française 10/08/2021*
+*Dernière mise à jour de la traduction française 10/18/2021*

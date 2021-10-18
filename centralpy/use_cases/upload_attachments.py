@@ -1,4 +1,4 @@
-"""A module for the use case of updating attachments for an instance."""
+"""A module for the use case of upload attachments for an instance."""
 from io import BufferedReader
 import logging
 from pathlib import Path
@@ -12,7 +12,7 @@ from centralpy.client import CentralClient
 logger = logging.getLogger(__name__)
 
 
-def update_attachments_from_sequence(
+def upload_attachments_from_sequence(
     client: CentralClient,
     project: str,
     form_id: str,
