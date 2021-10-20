@@ -34,8 +34,12 @@ lazy-object-proxy==1.6.0
     # via astroid
 mccabe==0.6.1
     # via pylint
+mypy==0.910
+    # via -r requirements-dev.in
 mypy-extensions==0.4.3
-    # via black
+    # via
+    #   black
+    #   mypy
 packaging==21.0
     # via bleach
 pathspec==0.9.0
@@ -75,17 +79,22 @@ six==1.16.0
 snowballstemmer==2.1.0
     # via pydocstyle
 toml==0.10.2
-    # via pylint
+    # via
+    #   mypy
+    #   pylint
 tomli==1.2.1
     # via black
 tqdm==4.62.3
     # via twine
 twine==3.4.2
     # via -r requirements-dev.in
+types-requests==2.25.11
+    # via -r requirements-dev.in
 typing-extensions==3.10.0.2
     # via
     #   astroid
     #   black
+    #   mypy
     #   pylint
 urllib3==1.26.7
     # via requests

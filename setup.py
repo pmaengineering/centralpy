@@ -21,6 +21,7 @@ REQUIRED = [
     "requests>=2.26.0",
     "click>=8.0.0",
     "tqdm>=4.62.0",
+    "werkzeug>=2.0.2",
 ]
 
 

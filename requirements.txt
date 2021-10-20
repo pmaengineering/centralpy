@@ -14,5 +14,9 @@ idna==3.2
     # via requests
 requests==2.26.0
     # via centralpy (setup.py)
+tqdm==4.62.3
+    # via centralpy (setup.py)
 urllib3==1.26.7
     # via requests
+werkzeug==2.0.2
+    # via centralpy (setup.py)

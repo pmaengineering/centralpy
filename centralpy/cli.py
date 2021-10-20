@@ -4,9 +4,10 @@ import logging
 from pathlib import Path
 import pprint
 import sys
-from typing import Tuple
+from typing import Optional, Tuple
 
 import click
+from werkzeug.utils import secure_filename
 
 from centralpy.__version__ import __version__
 from centralpy import CentralClient
@@ -15,6 +16,7 @@ from centralpy.errors import AuditReportError
 from centralpy.loggers import setup_logging
 from centralpy.use_cases import (
     check_connection,
+    download_all_attachments,
     download_attachments_from_sequence,
     pull_csv_zip,
     keep_recent_zips,
@@ -343,17 +345,20 @@ def upload_attachments(
 @click.option(
     "--attachment",
     "-a",
-    required=True,
     multiple=True,
-    help="The attachment file to download for the instance ID.",
+    help=(
+        "The attachment file to download for the instance ID. "
+        "If not given, then download all attachments."
+    ),
 )
 @click.option(
     "--download-dir",
     "-d",
-    default="./",
-    show_default=True,
     type=click.Path(file_okay=False, path_type=Path),
-    help="The directory to save audit files to",
+    help=(
+        "The directory to save audit files to. "
+        "Default is a safe version of the instance ID as the directory."
+    ),
 )
 @click.pass_context
 def download_attachments(
@@ -362,12 +367,13 @@ def download_attachments(
     form_id: str,
     instance_id: str,
     attachment: Tuple[str],
-    download_dir: Path,
+    download_dir: Optional[Path],
 ):
     """
-    Download one or more attachments for the given submission.
+    Download attachments for the given submission.
 
-    To pass multiple attachments, use -a multiple times.
+    To download all attachments, do not specify -a.
+    To specify multiple attachments, use -a multiple times.
 
     Use the check sub-command to see what attachments are available.
     """
@@ -381,17 +387,26 @@ def download_attachments(
         repr(str(download_dir)),
     )
     client = ctx.obj["client"]
-    saved_at = download_attachments_from_sequence(
-        client, str(project), form_id, instance_id, attachment, download_dir
-    )
-    for filename, path in zip(attachment, saved_at):
-        if path:
+    if not download_dir:
+        download_dir = Path(secure_filename(instance_id))
+    if attachment:
+        saved_at = download_attachments_from_sequence(
+            client, str(project), form_id, instance_id, attachment, download_dir
+        )
+        for filename, path in zip(attachment, saved_at):
+            if path:
+                print(f'Saved attachment to "{path}"')
+            else:
+                print(
+                    f'Unable to download "{filename}". '
+                    "Perhaps it is misspelled or missing from the server?"
+                )
+    else:
+        saved_at = download_all_attachments(
+            client, str(project), form_id, instance_id, download_dir
+        )
+        for path in saved_at:
             print(f'Saved attachment to "{path}"')
-        else:
-            print(
-                f'Unable to download "{filename}". '
-                "Perhaps it is misspelled or missing from the server?"
-            )
     logger.info(
         "Download attachments completed: project=%s, form_id=%s, instance_id=%s, "
         "attachment=%s, download_dir=%s",

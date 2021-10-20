@@ -26,15 +26,6 @@ or, by invoking the module with
 python3 -m centralpy --help
 ```
 
-FYI: this package's dependencies are
-- [`requests`][requests] for communicating with ODK Central
-- [`click`][click] >=8.0.0 for composing the command-line interface
-- [`tqdm`][tqdm] >= 4.62.0 for progress bar feedback
-
-[requests]: https://requests.readthedocs.io/en/master/
-[click]: https://click.palletsprojects.com/en/master/
-[tqdm]: https://github.com/tqdm/tqdm
-
 ## Upgrade
 
 Upgrade this package with
@@ -255,6 +246,17 @@ check-audits /path/to/storage
 - Clone this repository
 - Download all developer packages: `pip-sync requirements.txt requirements-dev.txt`
 
+FYI: this package's dependencies are
+- [`requests`][requests] for communicating with ODK Central
+- [`click`][click] >=8.0.0 for composing the command-line interface
+- [`tqdm`][tqdm] >= 4.62.0 for progress bar feedback
+- [`werkzeug`][werkzeug] >= 2.0.2 for secure filenames
+
+[requests]: https://requests.readthedocs.io/en/master/
+[click]: https://click.palletsprojects.com/en/master/
+[tqdm]: https://github.com/tqdm/tqdm
+[werkzeug]: https://werkzeug.palletsprojects.com/en/2.0.x/
+
 # Bugs
 
 Submit bug reports on the Github repository's issue tracker at [https://github.com/pmaengineering/centralpy/issues][issues]. Or, email the maintainer at jpringleBEAR@jhu.edu (minus the BEAR).
@@ -290,11 +292,6 @@ ou, en invoquant le module avec
 ```
 python3 -m centralpy --help
 ```
-
-Pour info: les dépendances de ce package sont
-- [`requests`][requests] pour communiquer avec ODK Central
-- [`click`][click] >=8.0.0 pour composer l'interface de ligne de commande
-- [`tqdm`][tqdm] >= 4.62.0 pour les commentaires de la barre de progression
 
 ## Améliorer
 
@@ -515,6 +512,12 @@ check-audits /chemin/vers/stockage
 - Installez `pip-tools` avec` python3 -m pip install pip-tools`
 - Cloner ce référentiel
 - Téléchargez tous les packages de développement: `pip-sync requirements.txt requirements-dev.txt`
+
+Pour info: les dépendances de ce package sont
+- [`requests`][requests] pour communiquer avec ODK Central
+- [`click`][click] >=8.0.0 pour composer l'interface de ligne de commande
+- [`tqdm`][tqdm] >= 4.62.0 pour les commentaires de la barre de progression
+- [`werkzeug`][werkzeug] >= 2.0.2 pour les noms de fichiers sécurisés
 
 # Insectes
 
