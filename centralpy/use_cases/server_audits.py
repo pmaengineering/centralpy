@@ -134,6 +134,7 @@ class AuditReport:  # pylint: disable=too-many-instance-attributes
                     last_checked=self.last_checked,
                 ),
                 f,
+                indent=2,
             )
 
     def __len__(self):

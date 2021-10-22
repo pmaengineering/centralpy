@@ -408,6 +408,8 @@ def download_attachments(
         )
         for path in saved_at:
             print(f'Saved attachment to "{path}"')
+        if not saved_at:
+            print("No attachments found.")
     logger.info(
         "Download attachments completed: project=%s, form_id=%s, instance_id=%s, "
         "attachment=%s, download_dir=%s",
