@@ -1,3 +1,12 @@
+# v0.6.0, 21 October 2021
+## Breaking changes
+* The `update-attachments` is changed to `upload-attachments` in order to pair with `download-attachments`.
+## What's new
+* Added `download-attachments` subcommand in order to download attachments for a single instance.
+* Added `check-server-audits` and `repair-server-audits` to deal with the problem of malformed audit files.
+## What's fixed
+* Fixed an error when running `pullcsv` with `--keep` option that caused a crash.
+
 # v0.5.2, 7 October 2021
 ## What's new
 * Display a progress bar when downloading CSV zip

@@ -56,12 +56,15 @@ Option | Description
   -c, --config-file FILENAME  | A configuration file with KEY=VALUE defined (one per line). Keys should be formatted as `CENTRALPY_***`.
   --help                  | Show this message and exit.
 
-There are then six subcommands.
+There are then nine subcommands.
 
 - [`pullcsv`](#subcommand-pullcsv)
 - [`push`](#subcommand-push)
 - [`check`](#subcommand-check)
+- [`download-attachments`](#subcommand-download-attachments)
 - [`upload-attachments`](#subcommand-upload-attachments)
+- [`check-server-audits`](#subcommand-check-server-audits)
+- [`repair-server-audits`](#subcommand-repair-server-audits)
 - [`config`](#subcommand-config)
 - [`version`](#subcommand-version)
 
@@ -115,13 +118,29 @@ If any of the checks fail, then the remaining checks are not performed.
 
 *TIP:* If a project is not provided, but the credentials are valid, then centralpy will show which projects are accessible for the user. Likewise, if there are valid credentials and a valid project, then centralpy will show which form IDs are accessible for the user.
 
-Option | Description 
+Option | Description
 --- | ---
   -p, --project INTEGER |  The numeric ID of the project. ODK Central assigns this ID when the project is created.
   -f, --form-id TEXT |     The form ID (a string), usually defined in the XLSForm settings. This is a unique identifier for an ODK form.
   -i, --instance-id TEXT  | An instance ID, found in the metadata for a submission. This is a unique identifier for an ODK submission to a form.
   --help |             Show this message and exit.
 
+## Subcommand: download-attachments
+
+  Download attachments for the given submission.
+
+  To download all attachments, do not specify -a. To specify multiple
+  attachments, use -a multiple times.
+
+  Use the check sub-command to see what attachments are available.
+
+Option | Description
+--- | ---
+  -p, --project INTEGER         | The numeric ID of the project. ODK Central assigns this ID when the project is created. (required)
+  -f, --form-id TEXT            | The form ID (a string), usually defined in the XLSForm settings. This is a unique identifier for an ODK form.  (required)
+  -i, --instance-id TEXT        | An instance ID, found in the metadata for a submission. This is a unique identifier for an ODK submission to a form.  (required)
+  -a, --attachment TEXT         | The attachment file to download for the instance ID. If not given, then download all attachments.
+  -d, --download-dir DIRECTORY  | The directory to save audit files to. Default is a safe version of the instance ID as the directory.
 
 ## Subcommand: upload-attachments
 
@@ -129,7 +148,7 @@ Option | Description
 
   To pass multiple attachments, use -a multiple times.
 
-Option | Description 
+Option | Description
 --- | ---
   -p, --project INTEGER | The numeric ID of the project. ODK Central assigns this ID when the project is created.
   -f, --form-id TEXT | The form ID (a string), usually defined in the XLSForm settings. This is a unique identifier for an ODK form.
@@ -137,6 +156,31 @@ Option | Description
   -a, --attachment FILENAME | The attachment file to upload for the instance ID.
   --help | Show this message and exit.
 
+## Subcommand: check-server-audits
+
+  Check audit files on ODK Central for correctness.
+
+  This command saves bad audits to disk so they can be corrected. After
+  correcting them, use repair-server-audits to upload back to ODK Central.
+
+Option | Description
+--- | ---
+  -p, --project INTEGER      | The numeric ID of the project. ODK Central assigns this ID when the project is created.  (required)
+  -f, --form-id TEXT         | The form ID (a string), usually defined in the XLSForm settings. This is a unique identifier for an ODK form.  (required)
+  -r, --report-file FILE     | Where to save results from checking audits in JSON format. This file is meant to be reused from check to check.  (required)
+  -a, --audit-dir DIRECTORY  | The directory to save audit files to  (required)
+  -t, --time TEXT            | A relative time string, formatted as #h or #d with # is a number. Use "h" for hours and "d" for days. Check submissions in the last #h or #d.
+  -s, --since-prev           | Check submissions received after the last check (from --report-file). If no --time option is given, then the code tries to filter by previous report time.
+
+## Subcommand: repair-server-audits
+
+  Repair audit files on ODK Central by uploading corrected audits.
+
+  This is meant to be used after running check-server-audits.
+
+Option | Description
+--- | ---
+  -r, --report-file FILE  | The JSON file saved from check-server-audits. This file contains metadata about where to find instances.  (required)
 
 ## Subcommand: config
 
@@ -323,12 +367,15 @@ Option | Description
   -c, --config-file FILENAME | Un fichier de configuration avec KEY = VALUE défini (un par ligne). Les clés doivent être au format `CENTRALPY_***`.
   --help | Affichez ce message et quittez.
 
-Il y a alors six sous-commandes.
+Il y a alors neuf sous-commandes.
 
 - [`pullcsv`](#sous-commande-pullcsv)
 - [`push`](#sous-commande-push)
 - [`check`](#sous-commande-check)
+- [`download-attachments`](#souse-commande-download-attachments)
 - [`upload-attachments`](#sous-commande-upload-attachments)
+- [`check-server-audits`](#sous-commande-check-server-audits)
+- [`repair-server-audits`](#sous-commande-repair-server-audits)
 - [`config`](#sous-commande-config)
 - [`version`](#sous-commande-version)
 
@@ -389,6 +436,22 @@ Option | Description
   -i, --instance-id TEXTE | Un identifiant d'instance, trouvé dans les métadonnées d'un soumission. Il s'agit d'un identifiant unique pour un ODK soumission à un formulaire.
   --help |            Affichez ce message et quittez.
 
+## Sous-commande: download-attachments
+
+Téléchargez les pièces jointes pour la soumission donnée.
+
+   Pour télécharger toutes les pièces jointes, ne spécifiez pas -a. Pour spécifier plusieurs
+   pièces jointes, utilisez -a plusieurs fois.
+
+   Utilisez la sous-commande check pour voir quelles pièces jointes sont disponibles.
+
+Option | Description
+--- | ---
+   -p, --project ENTIER | L'ID numérique du projet. ODK Central attribue cet ID lors de la création du projet. (obligatoire)
+   -f, --form-id TEXTE | L'ID du formulaire (une chaîne), généralement défini dans les paramètres XLSForm. Il s'agit d'un identifiant unique pour un formulaire ODK. (obligatoire)
+   -i, --instance-id TEXTE | Un ID d'instance, trouvé dans les métadonnées d'une soumission. Il s'agit d'un identifiant unique pour une soumission ODK à un formulaire. (obligatoire)
+   -a, --attachement TEXTE | Le fichier de pièce jointe à télécharger pour l'ID d'instance. Sinon, téléchargez toutes les pièces jointes.
+   -d, --download-dir RÉPERTOIRE | Répertoire dans lequel enregistrer les fichiers d'audit. La valeur par défaut est une version sécurisée de l'ID d'instance en tant que répertoire.
 
 ## Sous-commande: upload-attachments
 
@@ -404,6 +467,31 @@ Options | Description
    -a, --attachment FILENAME | Le fichier de pièce jointe à mettre à jour pour l'instance IDENTIFIANT.
    --help | Affiche ce message et quitte.
 
+## Sous-commande: check-server-audits
+
+Vérifiez l'exactitude des fichiers d'audit sur ODK Central.
+
+  Cette commande enregistre les mauvais audits sur le disque afin qu'ils puissent être corrigés. Après
+  les corriger, utilisez repair-server-audits pour les télécharger à nouveau vers ODK Central.
+
+Option | Description
+--- | ---
+  -p, --project ENTIER | L'ID numérique du projet. ODK Central attribue cet ID lors de la création du projet. (obligatoire)
+  -f, --form-id TEXTE | L'ID du formulaire (une chaîne), généralement défini dans les paramètres XLSForm. Il s'agit d'un identifiant unique pour un formulaire ODK. (obligatoire)
+  -r, --report-file FICHIER | Où enregistrer les résultats de la vérification des audits au format JSON. Ce fichier est destiné à être réutilisé de chèque en chèque. (obligatoire)
+  -a, --audit-dir RÉPERTOIRE | Le répertoire dans lequel enregistrer les fichiers d'audit (obligatoire)
+  -t, --time TEXTE | Une chaîne d'heure relative, au format #h ou #d avec # est un nombre. Utilisez "h" pour les heures et "d" pour les jours. Vérifiez les soumissions dans le dernier #h ou #d.
+  -s, --since-prev | Vérifiez les soumissions reçues après la dernière vérification (depuis --report-file). Si aucune option --time n'est donnée, le code essaie de filtrer par heure du rapport précédent.
+
+## Sous-commande: repair-server-audits
+
+Réparez les fichiers d'audit sur ODK Central en téléchargeant les audits corrigés.
+
+Ceci est destiné à être utilisé après avoir exécuté check-server-audits.
+
+Option | Description
+--- | ---
+   -r, --report-file FICHIER | Le fichier JSON enregistré à partir de check-server-audits. Ce fichier contient des métadonnées indiquant où trouver les instances. (obligatoire)
 
 ## Sous-commande: config
 
@@ -523,4 +611,4 @@ Pour info: les dépendances de ce package sont
 
 Soumettez des rapports de bogue sur le suivi des problèmes du référentiel Github à l'adresse [https://github.com/pmaengineering/centralpy/issues][issues]. Ou, envoyez un e-mail au responsable à jpringleOURS@jhu.edu (moins l'OURS).
 
-*Dernière mise à jour de la traduction française 10/18/2021*
+*Dernière mise à jour de la traduction française 10/21/2021*
