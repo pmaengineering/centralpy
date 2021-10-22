@@ -16,6 +16,11 @@ class Attachment:
         """Return the response data as a string."""
         return self.response.text
 
+    @property
+    def content(self) -> bytes:
+        """Return the response data as bytes."""
+        return self.response.content
+
     def save(self, filename: Path) -> None:
         """Save the attachment to a file."""
         with open(filename, mode="wb") as f:

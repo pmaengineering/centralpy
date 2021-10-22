@@ -20,8 +20,9 @@ from centralpy.use_cases import (
     download_attachments_from_sequence,
     pull_csv_zip,
     keep_recent_zips,
+    make_server_audit_report,
     push_submissions_and_attachments,
-    report_on_server_audits,
+    repair_server_audits_from_report,
     upload_attachments_from_sequence,
 )
 
@@ -444,6 +445,13 @@ def download_attachments(
     ),
 )
 @click.option(
+    "--audit-dir",
+    "-a",
+    required=True,
+    type=click.Path(file_okay=False, path_type=Path),
+    help="The directory to save audit files to",
+)
+@click.option(
     "--time",
     "-t",
     help=(
@@ -461,25 +469,23 @@ def download_attachments(
         "If no --time option is given, then the code tries to filter by previous report time."
     ),
 )
-@click.option(
-    "--audit-dir",
-    "-a",
-    default="./",
-    show_default=True,
-    type=click.Path(file_okay=False, path_type=Path),
-    help="The directory to save audit files to",
-)
 @click.pass_context
 def check_server_audits(
     ctx,
     project: int,
     form_id: str,
     report_file: Path,
+    audit_dir: Path,
     time: str,
     since_prev: bool,
-    audit_dir: Path,
 ):
-    """Check audit files on ODK Central for correctness."""
+    """
+    Check audit files on ODK Central for correctness.
+
+    This command saves bad audits to disk so they can be corrected.
+    After correcting them, use repair-server-audits to upload back to
+    ODK Central.
+    """
     client = ctx.obj["client"]
     logger.info(
         "Check server audits initiated: project=%s, form_id=%s, report_file=%s, "
@@ -492,10 +498,11 @@ def check_server_audits(
         repr(str(audit_dir)),
     )
     try:
-        audit_report = report_on_server_audits(
+        audit_report = make_server_audit_report(
             client,
             str(project),
             form_id,
+            audit_dir,
             report_file,
             time,
             since_prev,
@@ -510,13 +517,14 @@ def check_server_audits(
                 print(f"Instance ID: {instance_id}")
                 for i, bad_record in result["bad_records"]:
                     print(f"-> Record {i:>4}: {bad_record}")
+            print(f'All audits saved to directory "{audit_dir}"')
         else:
             print(
                 f"Audits checked: {audit_report.count_checked}. "
                 f'Project {project}, form_id "{form_id}". '
                 "No malformed audits found."
             )
-        print(f"Results of check server audits saved to {report_file}.")
+        print(f'Report of check-server-audits saved to "{report_file}".')
     except AuditReportError as e:
         print(f"{e.args[0]}")
     logger.info(
@@ -528,6 +536,44 @@ def check_server_audits(
         repr(time),
         repr(since_prev),
         repr(str(audit_dir)),
+    )
+
+
+@main.command()
+@handle_common_errors
+@click.option(
+    "--report-file",
+    "-r",
+    required=True,
+    type=click.Path(dir_okay=False, path_type=Path, exists=True),
+    help=(
+        "The JSON file saved from check-server-audits. "
+        "This file contains metadata about where to find instances."
+    ),
+)
+@click.pass_context
+def repair_server_audits(
+    ctx,
+    report_file: Path,
+):
+    """
+    Repair audit files on ODK Central by uploading corrected audits.
+
+    This is meant to be used after running check-server-audits.
+    """
+    client = ctx.obj["client"]
+    logger.info(
+        "Repair server audits initiated: report_file=%s",
+        repr(str(report_file)),
+    )
+    audit_report = repair_server_audits_from_report(client, report_file)
+    print(
+        f"Count of repaired audits: {audit_report.count_checked}.",
+        f"Remaining bad audits: {len(audit_report.bad_audit)}",
+    )
+    logger.info(
+        "Repair server audits completed: report_file=%s",
+        repr(str(report_file)),
     )
 
 
