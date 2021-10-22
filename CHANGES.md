@@ -1,3 +1,9 @@
+# v0.6.1, 22 October 2021
+## What's new
+* Added exit code of 1 (failed) to check-server-audits if bad audits are found.
+## What's fixed
+* Fixed bug when repairing server audits, reading audit data as strings vs bytes.
+
 # v0.6.0, 21 October 2021
 ## Breaking changes
 * The `update-attachments` is changed to `upload-attachments` in order to pair with `download-attachments`.
