@@ -141,6 +141,7 @@ Option | Description
   -i, --instance-id TEXT        | An instance ID, found in the metadata for a submission. This is a unique identifier for an ODK submission to a form.  (required)
   -a, --attachment TEXT         | The attachment file to download for the instance ID. If not given, then download all attachments.
   -d, --download-dir DIRECTORY  | The directory to save audit files to. Default is a safe version of the instance ID as the directory.
+  --help                        | Show this message and exit.
 
 ## Subcommand: upload-attachments
 
@@ -171,6 +172,7 @@ Option | Description
   -a, --audit-dir DIRECTORY  | The directory to save audit files to  (required)
   -t, --time TEXT            | A relative time string, formatted as #h or #d with # is a number. Use "h" for hours and "d" for days. Check submissions in the last #h or #d.
   -s, --since-prev           | Check submissions received after the last check (from --report-file). If no --time option is given, then the code tries to filter by previous report time.
+  --help                     | Show this message and exit.
 
 ## Subcommand: repair-server-audits
 
@@ -181,6 +183,7 @@ Option | Description
 Option | Description
 --- | ---
   -r, --report-file FILE  | The JSON file saved from check-server-audits. This file contains metadata about where to find instances.  (required)
+  --help                  | Show this message and exit.
 
 ## Subcommand: config
 
@@ -452,6 +455,7 @@ Option | Description
    -i, --instance-id TEXTE | Un ID d'instance, trouvé dans les métadonnées d'une soumission. Il s'agit d'un identifiant unique pour une soumission ODK à un formulaire. (obligatoire)
    -a, --attachement TEXTE | Le fichier de pièce jointe à télécharger pour l'ID d'instance. Sinon, téléchargez toutes les pièces jointes.
    -d, --download-dir RÉPERTOIRE | Répertoire dans lequel enregistrer les fichiers d'audit. La valeur par défaut est une version sécurisée de l'ID d'instance en tant que répertoire.
+   --help | Affichez ce message et quittez.
 
 ## Sous-commande: upload-attachments
 
@@ -482,6 +486,7 @@ Option | Description
   -a, --audit-dir RÉPERTOIRE | Le répertoire dans lequel enregistrer les fichiers d'audit (obligatoire)
   -t, --time TEXTE | Une chaîne d'heure relative, au format #h ou #d avec # est un nombre. Utilisez "h" pour les heures et "d" pour les jours. Vérifiez les soumissions dans le dernier #h ou #d.
   -s, --since-prev | Vérifiez les soumissions reçues après la dernière vérification (depuis --report-file). Si aucune option --time n'est donnée, le code essaie de filtrer par heure du rapport précédent.
+  --help | Affichez ce message et quittez.
 
 ## Sous-commande: repair-server-audits
 
@@ -492,6 +497,7 @@ Ceci est destiné à être utilisé après avoir exécuté check-server-audits.
 Option | Description
 --- | ---
    -r, --report-file FICHIER | Le fichier JSON enregistré à partir de check-server-audits. Ce fichier contient des métadonnées indiquant où trouver les instances. (obligatoire)
+   --help | Affichez ce message et quittez.
 
 ## Sous-commande: config
 
