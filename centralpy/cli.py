@@ -529,6 +529,7 @@ def check_server_audits(
         print(f'Report of check-server-audits saved to "{report_file}".')
     except AuditReportError as e:
         print(f"{e.args[0]}")
+        sys.exit(1)
     logger.info(
         "Check server audits completed: project=%s, form_id=%s, report_file=%s, "
         "time=%s, since_prev=%s, audit_dir=%s",
@@ -539,6 +540,8 @@ def check_server_audits(
         repr(since_prev),
         repr(str(audit_dir)),
     )
+    if audit_report.bad_audit:
+        sys.exit(1)
 
 
 @main.command()

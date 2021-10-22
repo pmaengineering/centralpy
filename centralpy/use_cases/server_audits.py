@@ -161,8 +161,7 @@ def repair_server_audits_from_report(
         audit_report.audit_dir,
     )
     corrected_instance_ids = []
-    for audit in audit_report.bad_audit.values():
-        instance_id = audit["instance_id"]
+    for instance_id, audit in audit_report.bad_audit.items():
         audit_path = audit_report.get_audit_path(audit["audit_path"])
         if not audit_path.exists():
             logger.warning(
@@ -171,8 +170,8 @@ def repair_server_audits_from_report(
                 instance_id,
             )
             continue
-        data = audit_path.read_bytes()
-        bad_records = check_audit_data(data)
+        lines = audit_path.read_text(encoding="utf-8").splitlines()
+        bad_records = check_audit_data(lines)
         if bad_records:
             logger.warning(
                 'Audit at "%s" still has bad records. Not uploading.',
@@ -180,6 +179,7 @@ def repair_server_audits_from_report(
             )
             continue
         try:
+            data = audit_path.read_bytes()
             client.post_attachment(project, form_id, instance_id, AUDIT_FILENAME, data)
             corrected_instance_ids.append(instance_id)
         except HTTPError as e:
